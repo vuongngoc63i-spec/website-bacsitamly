@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teen Whisper - Người bạn lắng nghe</title>
+    
+    <!-- 1. FONTS: Google Fonts (Plus Jakarta Sans & Quicksand) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <!-- 2. ICONS: Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- 3. STYLING: TailwindCSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        display: ['"Quicksand"', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            blue: '#E0F2FE',  /* Sky 100 */
+                            pink: '#FCE7F3',  /* Pink 100 */
+                            purple: '#F3E8FF', /* Purple 100 */
+                            primary: '#6366F1', /* Indigo 500 */
+                            text: '#334155',    /* Slate 700 */
+                        }
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'blob': 'blob 7s infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        },
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- 4. CUSTOM CSS (Glassmorphism & Utilities) -->
+    <style>
+        body {
+            background-color: #F8FAFC;
+            overflow-x: hidden;
+        }
+
+        /* Glassmorphism Card Style */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+        }
+
+        /* Abstract Blobs Background */
+        .blob-bg {
+            position: absolute;
+            filter: blur(80px);
+            z-index: -1;
+            opacity: 0.8;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="text-brand-text min-h-screen flex flex-col relative">
+
+    <!-- BACKGROUND BLOBS (Trang trí nền Pastel) -->
+    <div class="blob-bg bg-blue-200 w-96 h-96 rounded-full top-0 left-0 mix-blend-multiply animate-blob"></div>
+    <div class="blob-bg bg-purple-200 w-96 h-96 rounded-full top-0 right-0 mix-blend-multiply animate-blob animation-delay-2000"></div>
+    <div class="blob-bg bg-pink-200 w-96 h-96 rounded-full -bottom-32 left-20 mix-blend-multiply animate-blob animation-delay-4000"></div>
+
+    <!-- HEADER: Logo & Quick Exit -->
+    <header class="w-full p-4 flex justify-between items-center z-50 fixed top-0 left-0 bg-white/30 backdrop-blur-md border-b border-white/20">
+        <!-- Logo / Menu -->
+        <div class="flex items-center gap-2">
+            <button class="p-2 rounded-full hover:bg-white/50 transition-colors md:hidden">
+                <i data-lucide="menu" class="w-6 h-6 text-gray-700"></i>
+            </button>
+            <div class="flex items-center gap-2 cursor-pointer">
+                <div class="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold">T</div>
+                <span class="font-display font-bold text-lg text-indigo-900 hidden md:block">TeenWhisper</span>
+            </div>
+        </div>
+
+        <!-- QUICK EXIT BUTTON (Nút thoát nhanh) -->
+        <button onclick="triggerQuickExit()" class="group flex items-center gap-2 bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 px-4 py-2 rounded-full transition-all shadow-sm hover:shadow-md">
+            <i data-lucide="log-out" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+            <span class="text-sm font-semibold">Thoát nhanh Google</span>
+        </button>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-grow flex items-center justify-center pt-24 pb-12 px-4 z-10">
+        <div class="container max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            
+            <!-- LEFT COLUMN: Content -->
+            <div class="order-2 md:order-1 text-center md:text-left space-y-6 content-col">
+                <div class="inline-block px-4 py-1.5 rounded-full bg-white/60 border border-indigo-100 text-indigo-600 text-sm font-semibold shadow-sm mb-2 backdrop-blur-sm">
+                    ✨ Không gian an toàn cho Gen Z
+                </div>
+                
+                <h1 class="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-slate-800 leading-tight">
+                    Chào bạn, mình là <span class="text-indigo-600">Teen Whisper</span>
+                </h1>
+                
+                <p class="text-lg text-slate-600 md:max-w-lg leading-relaxed mx-auto md:mx-0">
+                    Mình ở đây để lắng nghe mọi điều bạn nói, từ chuyện học tập, crush, đến những thay đổi của bản thân. <br>
+                    <span class="font-semibold text-indigo-500">Ẩn danh. Bảo mật. Không phán xét.</span>
+                </p>
+
+                <!-- ACTION BUTTONS -->
+                <div class="flex flex-col sm:flex-row gap-4 justify-center md:justify-start pt-4">
+                    <!-- Nút Chat -->
+                    <button class="relative overflow-hidden group bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-2xl shadow-lg shadow-indigo-200 transition-all hover:scale-105 active:scale-95">
+                        <div class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
+                        <div class="flex items-center gap-3 font-semibold text-lg">
+                            <i data-lucide="message-circle-heart"></i>
+                            <span>Bắt đầu trò chuyện</span>
+                        </div>
+                    </button>
+                    
+                    <!-- Nút Thư viện -->
+                    <button class="bg-white hover:bg-indigo-50 text-indigo-900 border border-indigo-100 px-8 py-4 rounded-2xl shadow-sm hover:shadow-md transition-all hover:scale-105 active:scale-95 flex items-center gap-3 font-semibold text-lg justify-center">
+                        <i data-lucide="book-open"></i>
+                        <span>Khám phá thư viện</span>
+                    </button>
+                </div>
+
+                <!-- DISCLAIMER -->
+                <div class="pt-6 border-t border-slate-200/60 mt-8">
+                    <p class="text-xs text-slate-400 italic flex items-start gap-2 justify-center md:justify-start max-w-md mx-auto md:mx-0">
+                        <i data-lucide="info" class="w-4 h-4 flex-shrink-0 mt-0.5"></i>
+                        <span>Lưu ý: Chatbot chỉ hỗ trợ tư vấn và cung cấp thông tin, không thay thế bác sĩ hoặc chuyên gia tâm lý trong các trường hợp bệnh lý.</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: Mascot Visual -->
+            <div class="order-1 md:order-2 flex justify-center relative mascot-col">
+                <!-- Mascot Container (Floating Animation) -->
+                <div class="animate-float relative z-10 w-64 h-64 md:w-96 md:h-96">
+                    <!-- Placeholder Image for Mascot (Using Unsplash abstract 3D object as fallback for Robot) -->
+                    <!-- In production, replace src with actual Mascot SVG/PNG -->
+                    <div class="w-full h-full rounded-full bg-gradient-to-tr from-indigo-200 to-pink-200 flex items-center justify-center shadow-2xl glass-panel relative overflow-hidden">
+                         <!-- Giả lập hình ảnh Mascot -->
+                        <img src="https://images.unsplash.com/photo-1546776310-eef45dd6d63c?q=80&w=1000&auto=format&fit=crop" 
+                             alt="Teen Whisper Mascot" 
+                             class="w-[85%] h-[85%] object-cover rounded-full border-4 border-white/50 shadow-inner"
+                        >
+                        <!-- Speech Bubble -->
+                        <div class="absolute -top-4 -right-4 bg-white px-4 py-2 rounded-xl rounded-bl-none shadow-lg border border-indigo-50 animate-bounce">
+                            <p class="text-sm font-bold text-indigo-600">👋 Chào cậu!</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Decorative Circle behind Mascot -->
+                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] border border-white/40 rounded-full z-0"></div>
+                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[140%] h-[140%] border border-white/20 rounded-full z-0"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- FOOTER (Simple) -->
+    <footer class="w-full text-center py-4 text-slate-400 text-sm z-10">
+        <p>&copy; 2025 Teen Whisper - Light The Night Together</p>
+    </footer>
+
+    <!-- 5. ANIMATIONS & LOGIC: GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script>
+        // Initialize Icons
+        lucide.createIcons();
+
+        // GSAP Animations on Load
+        window.addEventListener('load', () => {
+            const tl = gsap.timeline();
+
+            // 1. Mascot appears first (Pop effect)
+            tl.from(".mascot-col", {
+                duration: 1,
+                y: 50,
+                opacity: 0,
+                ease: "back.out(1.7)"
+            })
+            // 2. Text Content slides in
+            .from(".content-col > *", {
+                duration: 0.8,
+                y: 30,
+                opacity: 0,
+                stagger: 0.1, // Hiệu ứng xuất hiện lần lượt
+                ease: "power2.out"
+            }, "-=0.5");
+        });
+
+        // --- CHỨC NĂNG THOÁT NHANH (QUICK EXIT) ---
+        function triggerQuickExit() {
+            // Cách hoạt động: 
+            // 1. Mở trang Google (hoặc trang học tập) thay thế trang hiện tại.
+            // 2. Sử dụng 'replace' để người dùng không thể nhấn nút 'Back' của trình duyệt để quay lại đây.
+            
+            // Tùy chọn: Có thể đổi tiêu đề trang ngay lập tức để ngụy trang trong History
+            document.title = "Google"; 
+            
+            // Chuyển hướng
+            window.location.replace("https://www.google.com");
+            
+            // Fallback (Mở tab mới nếu trình duyệt chặn replace - hiếm gặp)
+            // window.open("https://www.google.com", "_blank");
+        }
+
+        // --- XỬ LÝ NÚT CHUYỂN HƯỚNG ---
+        // Demo interaction cho các nút
+        document.querySelector('button i[data-lucide="message-circle-heart"]').closest('button').addEventListener('click', () => {
+             // Logic chuyển sang trang Chat (FR-01: Anonymous Mode)
+             console.log("Navigating to Chat Interface...");
+             // window.location.href = "/chat.html"; // Uncomment in production
+             alert("Chuyển hướng đến màn hình Chat (Ẩn danh)...");
+        });
+
+        document.querySelector('button i[data-lucide="book-open"]').closest('button').addEventListener('click', () => {
+             // Logic chuyển sang trang Thư viện
+             console.log("Navigating to Library...");
+             // window.location.href = "/library.html"; // Uncomment in production
+             alert("Chuyển hướng đến Thư viện kiến thức...");
+        });
+
+    </script>
+</body>
+</html>
