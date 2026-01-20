@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Teen Whisper - Đa Chiều</title>
+   
+    <!-- FONTS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <!-- ICONS & TAILWIND -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'], display: ['"Quicksand"', 'sans-serif'] },
+                    animation: { 'blob': 'blob 10s infinite', 'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite' },
+                    keyframes: {
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { background-color: #F8FAFC; height: 100vh; overflow: hidden; }
+        .glass-panel { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.5); }
+        .bubble-user { background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%); color: white; border-radius: 18px 18px 4px 18px; }
+        .bubble-bot { background: white; color: #334155; border-radius: 18px 18px 18px 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 1px solid #F1F5F9; }
+        .typing-dot { width: 6px; height: 6px; bg-slate-400; border-radius: 50%; animation: typing 1.4s infinite ease-in-out both; background-color: #94A3B8; }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes typing { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .blob-bg { position: absolute; filter: blur(60px); z-index: -1; opacity: 0.6; }
+        
+        /* Hiệu ứng chuyển cảnh */
+        .hidden-screen { display: none !important; }
+        .fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="text-slate-700 relative flex flex-col h-full">
+
+    <!-- BACKGROUND BLOBS -->
+    <div class="blob-bg bg-blue-200 w-96 h-96 rounded-full top-0 left-0 mix-blend-multiply animate-blob"></div>
+    <div class="blob-bg bg-purple-200 w-96 h-96 rounded-full bottom-0 right-0 mix-blend-multiply animate-blob animation-delay-2000"></div>
+
+    <!-- ============================================ -->
+    <!-- MÀN HÌNH 1: LỰA CHỌN VAI TRÒ (LANDING PAGE) -->
+    <!-- ============================================ -->
+    <section id="role-selection-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-center p-6 bg-white/30 backdrop-blur-sm">
+        <div class="glass-panel p-8 rounded-3xl shadow-2xl max-w-md w-full text-center transform transition-all hover:scale-[1.01]">
+            <div class="w-20 h-20 bg-indigo-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-indigo-200">
+                <i data-lucide="message-circle-heart" class="w-10 h-10 text-white"></i>
+            </div>
+            <h1 class="text-3xl font-display font-bold text-slate-800 mb-2">Teen Whisper</h1>
+            <p class="text-slate-500 mb-8">Bạn muốn trò chuyện với ai hôm nay?</p>
+            
+            <div class="space-y-3">
+                <button onclick="selectRole('friend')" class="w-full flex items-center p-4 rounded-xl border border-indigo-100 bg-white hover:bg-indigo-50 hover:border-indigo-300 transition-all group text-left shadow-sm">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-4 text-2xl group-hover:scale-110 transition-transform">😎</div>
+                    <div>
+                        <h3 class="font-bold text-slate-700">Người Bạn Thân</h3>
+                        <p class="text-xs text-slate-400">Tâm sự thoải mái, ngôn ngữ Gen Z</p>
+                    </div>
+                </button>
+
+                <button onclick="selectRole('parent')" class="w-full flex items-center p-4 rounded-xl border border-orange-100 bg-white hover:bg-orange-50 hover:border-orange-300 transition-all group text-left shadow-sm">
+                    <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center mr-4 text-2xl group-hover:scale-110 transition-transform">🏡</div>
+                    <div>
+                        <h3 class="font-bold text-slate-700">Bố Mẹ Tâm Lý</h3>
+                        <p class="text-xs text-slate-400">Quan tâm, ấm áp, lời khuyên gia đình</p>
+                    </div>
+                </button>
+
+                <button onclick="selectRole('expert')" class="w-full flex items-center p-4 rounded-xl border border-teal-100 bg-white hover:bg-teal-50 hover:border-teal-300 transition-all group text-left shadow-sm">
+                    <div class="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center mr-4 text-2xl group-hover:scale-110 transition-transform">👩‍⚕️</div>
+                    <div>
+                        <h3 class="font-bold text-slate-700">Chuyên Gia Tâm Lý</h3>
+                        <p class="text-xs text-slate-400">Khách quan, khoa học, giải pháp cụ thể</p>
+                    </div>
+                </button>
+            </div>
+        </div>
+        <p class="mt-6 text-xs text-slate-400">Dữ liệu được bảo mật và ẩn danh 100%</p>
+    </section>
+
+    <!-- ============================================ -->
+    <!-- MÀN HÌNH 2: GIAO DIỆN CHAT (Ẩn lúc đầu) -->
+    <!-- ============================================ -->
+    <div id="chat-interface" class="flex flex-col h-full hidden-screen opacity-0">
+        
+        <!-- HEADER -->
+        <header class="glass-panel h-16 flex items-center justify-between px-4 fixed top-0 w-full z-40 shadow-sm">
+            <div class="flex items-center gap-3">
+                <button onclick="location.reload()" class="p-2 rounded-full hover:bg-slate-100"><i data-lucide="chevron-left" class="w-6 h-6 text-slate-600"></i></button>
+                <div class="flex items-center gap-2">
+                    <div class="relative">
+                        <div class="w-10 h-10 rounded-full bg-indigo-50 border-2 border-white shadow-sm overflow-hidden flex items-center justify-center text-xl" id="bot-avatar">
+                            🤖
+                        </div>
+                        <span class="absolute bottom-0 right-0 w-3 h-3 bg-green-400 border-2 border-white rounded-full"></span>
+                    </div>
+                    <div>
+                        <h1 class="font-display font-bold text-slate-800 leading-tight" id="bot-name">Teen Whisper</h1>
+                        <p class="text-xs text-indigo-500 font-medium" id="bot-role-text">Đang hoạt động</p>
+                    </div>
+                </div>
+            </div>
+            <button onclick="clearChat()" class="p-2 text-slate-400 hover:text-red-500"><i data-lucide="trash-2" class="w-5 h-5"></i></button>
+        </header>
+
+        <!-- MAIN CONTENT -->
+        <main id="chat-container" class="flex-grow pt-20 pb-40 px-4 overflow-y-auto no-scrollbar scroll-smooth">
+            <div id="message-list"></div>
+            <!-- Typing Indicator -->
+            <div id="typing-indicator" class="flex items-end gap-2 mb-4 hidden">
+                <div class="w-8 h-8 rounded-full bg-slate-100 flex-shrink-0 flex items-center justify-center border border-white text-sm" id="typing-avatar">🤖</div>
+                <div class="bubble-bot px-4 py-3">
+                    <div class="flex gap-1"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>
+                </div>
+            </div>
+            <div id="bottom-anchor"></div>
+        </main>
+
+        <!-- FOOTER -->
+        <footer class="fixed bottom-0 w-full z-40 bg-white/80 backdrop-blur-md pb-4 pt-2">
+            <div class="glass-input px-4 flex items-end gap-3 w-full max-w-3xl mx-auto">
+                <div class="flex-grow relative">
+                    <textarea id="chat-input" rows="1" placeholder="Nhập tin nhắn..." class="w-full bg-slate-100 border-0 rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-300 focus:bg-white transition-all resize-none max-h-32 text-slate-700 placeholder-slate-400" oninput="autoResize(this)" onkeydown="checkEnter(event)"></textarea>
+                </div>
+                <button onclick="sendMessage()" class="bg-indigo-600 hover:bg-indigo-700 text-white p-3 rounded-full shadow-lg shadow-indigo-200 transition-all hover:scale-110 active:scale-90 flex-shrink-0"><i data-lucide="send" class="w-5 h-5 ml-0.5"></i></button>
+            </div>
+        </footer>
+    </div>
+
+    <!-- SCRIPT Logic -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script>
+        lucide.createIcons();
+
+        // DOM Elements
+        const roleScreen = document.getElementById('role-selection-screen');
+        const chatInterface = document.getElementById('chat-interface');
+        const messageList = document.getElementById('message-list');
+        const chatInput = document.getElementById('chat-input');
+        const bottomAnchor = document.getElementById('bottom-anchor');
+        const typingIndicator = document.getElementById('typing-indicator');
+
+        // State
+        let currentRole = 'friend'; // Default
+
+        // ============================================
+        // 1. DATA: BỘ NÃO ĐA NHÂN CÁCH (15+ CHỦ ĐỀ)
+        // ============================================
+        const botBrain = [
+            {
+                keywords: ['mụn', 'trứng cá', 'da mặt'],
+                responses: {
+                    friend: "Ôi mụn chán ha? 😩 Tui cũng hay bị nè. Nhớ đừng có sờ tay lên nặn nha, sẹo rỗ là tiêu luôn á. Rửa mặt kỹ vào!",
+                    parent: "Con đừng lo, tuổi dậy thì ai cũng vậy mà. Để mẹ mua cho con loại sữa rửa mặt dịu nhẹ nhé. Con nhớ ngủ sớm, thức khuya hại da lắm đấy.",
+                    expert: "Mụn trứng cá là do sự tăng tiết bã nhờn và vi khuẩn P.acnes. Em cần duy trì quy trình làm sạch da 2 bước, và hạn chế đường/sữa trong khẩu phần ăn nhé."
+                }
+            },
+            {
+                keywords: ['chiều cao', 'cao', 'lùn'],
+                responses: {
+                    friend: "Muốn cao thì đi bơi với tui đê! 🏊‍♂️ Với cả uống sữa thay nước lọc luôn kkk. Cố lên bro!",
+                    parent: "Bố mẹ đang cố gắng nấu nhiều món canxi cho con đây. Con chịu khó ăn uống với đi ngủ trước 10 giờ tối nhé, lúc đó hormone mới hoạt động tốt.",
+                    expert: "Giai đoạn này là đỉnh tăng trưởng. Em cần kết hợp 3 yếu tố: Dinh dưỡng (Canxi, Vit D3), Vận động (bơi, bóng rổ) và Giấc ngủ (ngủ sâu từ 22h-2h sáng)."
+                }
+            },
+            {
+                keywords: ['crush', 'thích', 'tỏ tình', 'yêu'],
+                responses: {
+                    friend: "Uầy uầy, ai thế? 😍 Kể nghe coi! Mà cứ từ từ thôi nha, coi chừng người ta 'thả thính' đó.",
+                    parent: "Có tình cảm với bạn khác giới là bình thường thôi con. Bố mẹ không cấm, nhưng con nhớ giữ chừng mực và đừng để ảnh hưởng việc học nhé.",
+                    expert: "Rung động đầu đời là cảm xúc tâm lý tự nhiên. Em hãy coi đó là động lực để cùng nhau tiến bộ, đừng để cảm xúc chi phối quá nhiều đến cuộc sống hàng ngày."
+                }
+            },
+            {
+                keywords: ['buồn', 'khóc', 'chán', 'stress'],
+                responses: {
+                    friend: "Sao dợ? Ai làm gì cậu à? Đi làm ván game hay trà sữa không cho đỡ buồn? Tui nghe nè. 🥺",
+                    parent: "Có chuyện gì nói bố mẹ nghe được không? Về nhà là để được yêu thương mà, đừng giữ trong lòng một mình con nhé.",
+                    expert: "Tôi hiểu em đang trải qua giai đoạn khó khăn. Cảm xúc tiêu cực là một tín hiệu. Em hãy thử hít thở sâu hoặc viết nhật ký để giải tỏa xem sao."
+                }
+            },
+            {
+                keywords: ['học', 'thi', 'điểm kém', 'bài tập'],
+                responses: {
+                    friend: "Học hành áp lực xỉu luôn á. Thôi ráng thi xong rồi xõa. Hay là học nhóm đi cho vui?",
+                    parent: "Điểm số không phải là tất cả đâu con. Bố mẹ chỉ cần con đã cố gắng hết sức là được. Đừng tự tạo áp lực quá nhé.",
+                    expert: "Để học hiệu quả, em không nên học nhồi nhét. Hãy áp dụng phương pháp Pomodoro: học 25 phút, nghỉ 5 phút để não bộ được hồi phục."
+                }
+            },
+            {
+                keywords: ['mùi', 'hôi nách', 'cơ thể'],
+                responses: {
+                    friend: "Haha chuyện nhỏ, tui cũng xài lăn khử mùi mà. Mua chai nào thơm thơm xíu là tự tin ngay!",
+                    parent: "Con lớn rồi nên tuyến mồ hôi hoạt động mạnh hơn thôi. Con nhớ tắm rửa kỹ và thay quần áo mỗi ngày là được.",
+                    expert: "Mùi cơ thể do vi khuẩn phân hủy mồ hôi gây ra. Em nên chọn sản phẩm khử mùi có chứa muối nhôm và mặc quần áo cotton thoáng khí."
+                }
+            },
+            {
+                keywords: ['kinh nguyệt', 'đèn đỏ', 'đau bụng'],
+                responses: {
+                    friend: "Thương ghê, đau lắm không? 😭 Lấy túi chườm ấm đi, với uống nước ấm nha. Đừng uống nước đá nhen!",
+                    parent: "Con gái mẹ lớn rồi. Nếu đau quá thì bảo mẹ, mẹ pha nước gừng cho. Nhớ thay băng thường xuyên để giữ vệ sinh con nhé.",
+                    expert: "Chu kỳ kinh nguyệt tuổi này thường chưa đều do rối loạn nội tiết tố. Nếu em đau bụng dữ dội hoặc lượng máu quá nhiều, chúng ta cần đi siêu âm kiểm tra."
+                }
+            },
+            {
+                keywords: ['vỡ giọng', 'ồm', 'khàn'],
+                responses: {
+                    friend: "Giọng ồm ồm nghe ngầu mà! 😂 Đừng lo, thằng nào lớp mình chả bị. Sắp thành 'soái ca' rồi đó.",
+                    parent: "Đây là dấu hiệu con đã trở thành chàng trai thực thụ rồi. Con hạn chế la hét để bảo vệ dây thanh quản nhé.",
+                    expert: "Hiện tượng vỡ giọng là do dây thanh quản dày lên dưới tác động của Testosterone. Nó sẽ ổn định sau khoảng 6 tháng đến 1 năm."
+                }
+            },
+            {
+                keywords: ['bố mẹ', 'cãi nhau', 'gia đình'],
+                responses: {
+                    friend: "Người lớn khó hiểu lắm. Thôi kệ đi, đợi ổng bả nguôi giận rồi mình lựa lời nói sau. Cậu còn có tui mà.",
+                    parent: "Bố mẹ đôi khi nóng giận vì lo cho con thôi. Lúc nào bình tĩnh, con thử ngồi lại nói chuyện nhẹ nhàng với bố mẹ xem sao?",
+                    expert: "Mâu thuẫn thế hệ là điều khó tránh khỏi. Em hãy thử sử dụng cấu trúc câu 'Con cảm thấy... khi bố mẹ...' để bày tỏ cảm xúc mà không gây chiến."
+                }
+            },
+            {
+                keywords: ['bắt nạt', 'tẩy chay', 'đánh'],
+                responses: {
+                    friend: "Cái gì? Đứa nào dám đụng vào cậu? 😡 Đừng im lặng, phải báo thầy cô ngay. Không được để tụi nó lấn lướt!",
+                    parent: "Ai làm đau con? Nói bố mẹ nghe ngay! Bố mẹ sẽ bảo vệ con, không ai có quyền làm tổn thương con cả.",
+                    expert: "Hành vi bắt nạt là không thể chấp nhận. Em cần tìm kiếm sự trợ giúp từ người lớn đáng tin cậy ngay lập tức. Đừng đối mặt một mình."
+                }
+            },
+            {
+                keywords: ['game', 'nghiện', 'internet'],
+                responses: {
+                    friend: "Game cuốn thiệt nhưng chơi ít thôi không mắt cận lòi ra đấy bro. Rủ tui đi đá banh đê!",
+                    parent: "Bố mẹ không cấm chơi, nhưng con phải biết cân đối giờ giấc. Chơi xong nhớ làm bài tập và phụ giúp việc nhà nhé.",
+                    expert: "Nghiện game có thể làm giảm khả năng tập trung. Em nên đặt quy tắc: chỉ chơi game sau khi hoàn thành mọi trách nhiệm trong ngày."
+                }
+            },
+            {
+                keywords: ['lgbt', 'gay', 'les', 'giới tính'],
+                responses: {
+                    friend: "Dù cậu là ai thì tui vẫn là bạn cậu mà! 🏳️‍🌈 Cứ là chính mình thôi, ai nói gì kệ họ.",
+                    parent: "Con là con của bố mẹ, điều đó không bao giờ thay đổi. Bố mẹ luôn yêu thương con vô điều kiện.",
+                    expert: "Xu hướng tính dục là một phổ đa dạng. Việc em khám phá bản thân là hành trình dũng cảm. Hãy tôn trọng cảm xúc thật của mình."
+                }
+            }
+        ];
+
+        // Fallback responses (Khi không hiểu)
+        const fallbacks = {
+            friend: ["Cái này mới à nha, kể rõ hơn đi!", "Tui chưa hiểu lắm, nói lại coi bro?", "Nghe căng thẳng dợ, rồi sao nữa?"],
+            parent: ["Bố mẹ chưa hiểu ý con lắm, con nói rõ hơn được không?", "Chuyện này có vẻ quan trọng, con kể tiếp đi.", "Bố mẹ luôn lắng nghe con đây."],
+            expert: ["Vấn đề này cần thêm thông tin. Em có thể chia sẻ cụ thể hơn không?", "Tôi đang lắng nghe, em cứ tiếp tục.", "Đây là một chủ đề phức tạp, em kể chi tiết hơn nhé."]
+        };
+
+        // ============================================
+        // 2. LOGIC CHỨC NĂNG
+        // ============================================
+
+        // Chọn vai trò và chuyển màn hình
+        function selectRole(role) {
+            currentRole = role;
+            
+            // UI Updates
+            const avatars = { friend: '😎', parent: '🏡', expert: '👩‍⚕️' };
+            const names = { friend: 'Bạn Thân', parent: 'Bố Mẹ', expert: 'Chuyên Gia Tâm Lý' };
+            const roles = { friend: 'Luôn bên bạn', parent: 'Gia đình là số 1', expert: 'Tư vấn chuyên sâu' };
+            
+            document.getElementById('bot-avatar').innerText = avatars[role];
+            document.getElementById('typing-avatar').innerText = avatars[role];
+            document.getElementById('bot-name').innerText = names[role];
+            document.getElementById('bot-role-text').innerText = roles[role];
+
+            // Animation Transition
+            gsap.to(roleScreen, { opacity: 0, duration: 0.5, onComplete: () => {
+                roleScreen.classList.add('hidden-screen');
+                chatInterface.classList.remove('hidden-screen');
+                chatInterface.classList.add('fade-in');
+                
+                // Gửi lời chào đầu tiên
+                setTimeout(() => {
+                    let greeting = "";
+                    if(role === 'friend') greeting = "Hế lô! Hôm nay có biến gì không kể tui nghe coi? 😎";
+                    else if(role === 'parent') greeting = "Chào con yêu! Hôm nay đi học có vui không? Về nhà có chuyện gì kể bố mẹ nghe nào. 🏡";
+                    else greeting = "Chào em. Tôi là chuyên gia tâm lý. Em đang gặp khúc mắc gì cần giải tỏa không? 👩‍⚕️";
+                    
+                    appendMessage(greeting, 'bot');
+                }, 500);
+            }});
+        }
+
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+        }
+
+        function checkEnter(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        }
+
+        function sendMessage() {
+            const text = chatInput.value.trim();
+            if (!text) return;
+
+            appendMessage(text, 'user');
+            chatInput.value = '';
+            chatInput.style.height = 'auto';
+
+            // Show typing
+            typingIndicator.classList.remove('hidden');
+            bottomAnchor.scrollIntoView({ behavior: 'smooth' });
+
+            // Generate Response
+            setTimeout(() => {
+                typingIndicator.classList.add('hidden');
+                const response = getResponse(text);
+                appendMessage(response, 'bot');
+            }, 1200);
+        }
+
+        function getResponse(input) {
+            const lowerInput = input.toLowerCase();
+            
+            // 1. Tìm trong Knowledge Base
+            for (let topic of botBrain) {
+                if (topic.keywords.some(k => lowerInput.includes(k))) {
+                    return topic.responses[currentRole]; // Trả về câu trả lời theo vai trò
+                }
+            }
+            
+            // 2. Fallback
+            const fallbackList = fallbacks[currentRole];
+            return fallbackList[Math.floor(Math.random() * fallbackList.length)];
+        }
+
+        function appendMessage(text, sender) {
+            const div = document.createElement('div');
+            div.className = `flex ${sender === 'user' ? 'justify-end' : 'items-end gap-2'} mb-4 opacity-0 scale-95`;
+            
+            const avatar = document.getElementById('bot-avatar').innerText;
+
+            if (sender === 'user') {
+                div.innerHTML = `<div class="bubble-user px-4 py-3 max-w-[80%] text-sm leading-relaxed shadow-md">${text}</div>`;
+            } else {
+                div.innerHTML = `
+                    <div class="w-8 h-8 rounded-full bg-slate-100 flex-shrink-0 flex items-center justify-center border border-white shadow-sm overflow-hidden text-sm">
+                        ${avatar}
+                    </div>
+                    <div class="bubble-bot px-4 py-3 max-w-[80%] text-sm leading-relaxed">${text}</div>
+                `;
+            }
+
+            messageList.appendChild(div);
+            gsap.to(div, { opacity: 1, scale: 1, duration: 0.3 });
+            bottomAnchor.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function clearChat() {
+            if(confirm("Xóa tin nhắn và quay lại chọn vai trò?")) {
+                location.reload();
+            }
+        }
+    </script>
+</body>
+</html>
