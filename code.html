@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cấu hình Bot - Teen Whisper Admin</title>
+   
+    <!-- 1. FONTS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
+
+    <!-- 2. ICONS -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- 3. STYLING -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        display: ['"Quicksand"', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            primary: '#6366F1',
+                            bg: '#F8FAFC',
+                            surface: '#FFFFFF',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { background-color: #F1F5F9; color: #334155; }
+
+        /* Sidebar Styling */
+        .sidebar-link {
+            display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem;
+            border-radius: 0.75rem; font-weight: 500; color: #64748B; transition: all 0.2s;
+        }
+        .sidebar-link:hover, .sidebar-link.active { background-color: #EEF2FF; color: #6366F1; }
+        .sidebar-link.active { font-weight: 600; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
+
+        /* Form Elements */
+        textarea, input[type="text"] {
+            transition: all 0.3s ease;
+        }
+        textarea:focus, input[type="text"]:focus {
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        /* Range Slider Styling */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: #6366F1;
+            cursor: pointer;
+            margin-top: -8px;
+            box-shadow: 0 2px 6px rgba(99, 102, 241, 0.4);
+            transition: transform 0.1s;
+        }
+        input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.1); }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #E2E8F0;
+            border-radius: 2px;
+        }
+
+        /* Panic Button Animation */
+        @keyframes urgent-pulse {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        .panic-btn-admin:hover { animation: urgent-pulse 1.5s infinite; }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden font-sans">
+
+    <!-- 1. SIDEBAR -->
+    <aside id="sidebar" class="w-64 bg-white border-r border-slate-200 hidden md:flex flex-col h-full fixed md:relative z-20 transition-transform transform -translate-x-full md:translate-x-0">
+        <div class="h-16 flex items-center px-6 border-b border-slate-100">
+            <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold mr-3">T</div>
+            <span class="font-display font-bold text-xl text-slate-800">TeenWhisper</span>
+        </div>
+
+        <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+            <p class="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Tổng quan</p>
+            <a href="#" class="sidebar-link"><i data-lucide="layout-dashboard" class="w-5 h-5"></i> Dashboard</a>
+            
+            <p class="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mt-6 mb-2">Nội dung</p>
+            <a href="#" class="sidebar-link"><i data-lucide="database" class="w-5 h-5"></i> Quản lý Tri thức (RAG)</a>
+            <a href="#" class="sidebar-link"><i data-lucide="message-square" class="w-5 h-5"></i> Lịch sử Chat</a>
+            <a href="#" class="sidebar-link"><i data-lucide="alert-triangle" class="w-5 h-5 text-red-500"></i> Báo cáo Khẩn cấp</a>
+
+            <p class="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mt-6 mb-2">Hệ thống</p>
+            <a href="#" class="sidebar-link active"><i data-lucide="settings" class="w-5 h-5"></i> Cấu hình Bot</a>
+        </nav>
+
+        <div class="p-4 border-t border-slate-100">
+            <div class="flex items-center gap-3">
+                <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=100" class="w-10 h-10 rounded-full">
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-slate-900 truncate">Admin User</p>
+                    <p class="text-xs text-slate-500 truncate">Tech Lead</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Overlay Mobile -->
+    <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/50 z-10 hidden md:hidden"></div>
+
+    <!-- 2. MAIN CONTENT -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden bg-[#F8FAFC]">
+        
+        <!-- Header -->
+        <header class="h-16 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-6 z-10 sticky top-0">
+            <div class="flex items-center gap-4">
+                <button onclick="toggleSidebar()" class="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                <div>
+                    <h2 class="text-lg font-bold text-slate-800 font-display">Cấu hình AI</h2>
+                    <p class="text-xs text-slate-500 hidden sm:block">Điều chỉnh hành vi và cơ chế an toàn</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <!-- NÚT LƯU THAY ĐỔI -->
+                <button onclick="saveSettings()" class="hidden sm:flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-full font-bold shadow-md transition-all active:scale-95">
+                    <i data-lucide="save" class="w-4 h-4"></i>
+                    <span>Lưu cấu hình</span>
+                </button>
+
+                 <!-- NÚT THOÁT NHANH -->
+                 <button onclick="triggerQuickExit()" class="panic-btn-admin flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-full font-bold shadow-md transition-transform active:scale-95 ml-2">
+                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                    <span class="hidden sm:inline">Thoát nhanh</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Body Content -->
+        <div class="flex-1 overflow-y-auto p-6 scroll-smooth">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
+                
+                <!-- COLUMN 1: SYSTEM PROMPT & KEYWORDS (2/3 Width) -->
+                <div class="lg:col-span-2 space-y-6">
+                    
+                    <!-- A. System Prompt Editor -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 gs-reveal">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-bold text-slate-800 flex items-center gap-2 text-lg font-display">
+                                <i data-lucide="brain-circuit" class="w-5 h-5 text-indigo-600"></i>
+                                Vai trò & Tính cách (System Prompt)
+                            </h3>
+                            <span class="text-xs bg-slate-100 text-slate-500 px-2 py-1 rounded">Last updated: 2h ago</span>
+                        </div>
+                        
+                        <p class="text-sm text-slate-500 mb-4">
+                            Đây là chỉ thị cốt lõi định hình cách Bot trả lời. Hãy mô tả kỹ giọng văn (Tone & Voice) và các quy tắc ứng xử.
+                        </p>
+
+                        <div class="relative">
+                            <textarea id="system-prompt" rows="10" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 font-mono text-sm leading-relaxed resize-y focus:bg-white outline-none">
+Bạn là Teen Whisper, một người bạn ảo đồng hành cùng học sinh THCS và THPT (11-18 tuổi).
+- TONE & VOICE: Thân thiện, dùng ngôn ngữ Gen Z (cậu, tớ, mình), không giáo điều, không phán xét. Luôn lắng nghe và thấu cảm.
+- NHIỆM VỤ: Giải đáp thắc mắc về dậy thì, sức khỏe sinh sản, tâm lý học đường dựa trên kiến thức khoa học (RAG).
+- GIỚI HẠN: Bạn KHÔNG phải bác sĩ. Với các câu hỏi về bệnh lý nghiêm trọng, hãy khuyên người dùng đi khám.
+- QUY TẮC AN TOÀN: Nếu phát hiện ý định tự tử, xâm hại, bạo lực -> Kích hoạt quy trình khẩn cấp (Emergency Protocol) ngay lập tức và cung cấp hotline 111.
+                            </textarea>
+                            <div class="absolute bottom-3 right-3 flex gap-2">
+                                <button onclick="resetPrompt()" class="text-xs bg-white border border-slate-200 text-slate-500 px-3 py-1.5 rounded-lg hover:bg-slate-50">Khôi phục mặc định</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- B. Blacklist / Emergency Keywords -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 gs-reveal">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-bold text-slate-800 flex items-center gap-2 text-lg font-display">
+                                <i data-lucide="shield-alert" class="w-5 h-5 text-red-500"></i>
+                                Từ khóa Báo động đỏ (Trigger Words)
+                            </h3>
+                        </div>
+                        
+                        <p class="text-sm text-slate-500 mb-4">
+                            Khi người dùng nhập các từ khóa này, Bot sẽ ngưng chat thông thường và chuyển sang chế độ <strong>Khẩn cấp (Emergency Mode)</strong>.
+                        </p>
+
+                        <!-- Input Area -->
+                        <div class="flex gap-2 mb-4">
+                            <input type="text" id="keyword-input" placeholder="Nhập từ khóa (VD: tự tử, chết đi)..." class="flex-1 px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-red-400 focus:ring-1 focus:ring-red-400">
+                            <button onclick="addKeyword()" class="bg-red-50 text-red-600 hover:bg-red-100 px-4 py-2 rounded-xl font-bold text-sm transition-colors">
+                                Thêm
+                            </button>
+                        </div>
+
+                        <!-- Tags Container -->
+                        <div class="flex flex-wrap gap-2 p-4 bg-red-50/50 rounded-xl border border-red-100 min-h-[100px]" id="keyword-list">
+                            <!-- JS will populate this -->
+                            <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-white text-red-700 border border-red-200 shadow-sm">
+                                tự tử <button onclick="removeKeyword(this)" class="hover:text-red-900 ml-1"><i data-lucide="x" class="w-3 h-3"></i></button>
+                            </span>
+                            <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-white text-red-700 border border-red-200 shadow-sm">
+                                muốn chết <button onclick="removeKeyword(this)" class="hover:text-red-900 ml-1"><i data-lucide="x" class="w-3 h-3"></i></button>
+                            </span>
+                             <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-white text-red-700 border border-red-200 shadow-sm">
+                                bị xâm hại <button onclick="removeKeyword(this)" class="hover:text-red-900 ml-1"><i data-lucide="x" class="w-3 h-3"></i></button>
+                            </span>
+                             <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-white text-red-700 border border-red-200 shadow-sm">
+                                rạch tay <button onclick="removeKeyword(this)" class="hover:text-red-900 ml-1"><i data-lucide="x" class="w-3 h-3"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- COLUMN 2: PARAMETERS (1/3 Width) -->
+                <div class="space-y-6">
+                    
+                    <!-- C. Model Parameters -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 gs-reveal">
+                        <h3 class="font-bold text-slate-800 flex items-center gap-2 mb-6 font-display">
+                            <i data-lucide="sliders" class="w-5 h-5 text-indigo-600"></i>
+                            Tham số Mô hình
+                        </h3>
+
+                        <!-- Temperature -->
+                        <div class="mb-6">
+                            <div class="flex justify-between mb-2">
+                                <label class="text-sm font-bold text-slate-700">Độ sáng tạo (Temperature)</label>
+                                <span class="text-sm font-mono text-indigo-600 bg-indigo-50 px-2 rounded" id="temp-val">0.7</span>
+                            </div>
+                            <input type="range" min="0" max="1" step="0.1" value="0.7" class="slider" oninput="document.getElementById('temp-val').innerText = this.value">
+                            <div class="flex justify-between text-xs text-slate-400 mt-1">
+                                <span>Chính xác (0.0)</span>
+                                <span>Sáng tạo (1.0)</span>
+                            </div>
+                        </div>
+
+                        <!-- Max Length -->
+                        <div class="mb-6">
+                             <div class="flex justify-between mb-2">
+                                <label class="text-sm font-bold text-slate-700">Độ dài tối đa (Tokens)</label>
+                                <span class="text-sm font-mono text-indigo-600 bg-indigo-50 px-2 rounded" id="len-val">512</span>
+                            </div>
+                            <input type="range" min="128" max="2048" step="128" value="512" class="slider" oninput="document.getElementById('len-val').innerText = this.value">
+                        </div>
+
+                         <!-- Tone Selector -->
+                         <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">Giọng điệu mặc định</label>
+                            <select class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:border-indigo-500 outline-none">
+                                <option value="friend">Người bạn (Gen Z, Thân thiện)</option>
+                                <option value="expert">Chuyên gia (Trang trọng)</option>
+                                <option value="minimal">Tối giản (Ngắn gọn)</option>
+                            </select>
+                         </div>
+                    </div>
+
+                    <!-- D. Knowledge Source Status -->
+                    <div class="bg-indigo-600 rounded-2xl shadow-lg shadow-indigo-200 p-6 text-white gs-reveal relative overflow-hidden">
+                        <div class="absolute -top-10 -right-10 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl"></div>
+                        
+                        <h3 class="font-bold flex items-center gap-2 mb-2 font-display">
+                            <i data-lucide="database" class="w-5 h-5"></i> Trạng thái Dữ liệu
+                        </h3>
+                        <p class="text-indigo-100 text-sm mb-4">Dữ liệu được cập nhật lần cuối: <strong>10:30 AM hôm nay</strong>.</p>
+                        
+                        <div class="flex items-center gap-2 mb-1">
+                            <div class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
+                            <span class="text-xs font-medium">Vector DB: Connected</span>
+                        </div>
+                         <div class="flex items-center gap-2">
+                            <div class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
+                            <span class="text-xs font-medium">LLM API: Active</span>
+                        </div>
+
+                        <button class="mt-4 w-full bg-white text-indigo-600 py-2 rounded-lg text-sm font-bold hover:bg-indigo-50 transition-colors">
+                            Kiểm tra kết nối
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+            
+            <!-- Mobile Save Button (Fixed Bottom) -->
+            <div class="sm:hidden fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-slate-200 z-30">
+                <button onclick="saveSettings()" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold shadow-lg">Lưu cấu hình</button>
+            </div>
+            
+        </div>
+    </main>
+
+    <!-- JS Logic -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script>
+        lucide.createIcons();
+
+        // 1. Sidebar Logic
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.toggle('-translate-x-full');
+            sidebar.classList.toggle('absolute');
+            overlay.classList.toggle('hidden');
+        }
+
+        // 2. Panic Button
+        function triggerQuickExit() {
+            document.title = "Google";
+            window.location.replace("https://www.google.com");
+        }
+        document.addEventListener('keydown', (e) => {
+            if (e.key === "Escape") triggerQuickExit();
+        });
+
+        // 3. Keyword Management Logic
+        function addKeyword() {
+            const input = document.getElementById('keyword-input');
+            const list = document.getElementById('keyword-list');
+            const value = input.value.trim().toLowerCase();
+
+            if (value) {
+                // Check duplicates (simple check)
+                if ([...list.querySelectorAll('span')].some(span => span.innerText.includes(value))) {
+                    alert('Từ khóa này đã tồn tại!');
+                    return;
+                }
+
+                const tag = document.createElement('span');
+                tag.className = "inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-white text-red-700 border border-red-200 shadow-sm gs-tag";
+                tag.innerHTML = `${value} <button onclick="removeKeyword(this)" class="hover:text-red-900 ml-1"><i data-lucide="x" class="w-3 h-3"></i></button>`;
+                
+                list.appendChild(tag);
+                input.value = '';
+                lucide.createIcons();
+
+                // Animation for new tag
+                gsap.from(tag, { scale: 0.5, opacity: 0, duration: 0.3, ease: "back.out(1.7)" });
+            }
+        }
+
+        // Allow Enter key to add keyword
+        document.getElementById('keyword-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') addKeyword();
+        });
+
+        function removeKeyword(btn) {
+            const tag = btn.parentElement;
+            gsap.to(tag, { 
+                scale: 0.5, 
+                opacity: 0, 
+                duration: 0.2, 
+                onComplete: () => tag.remove() 
+            });
+        }
+
+        // 4. Save Settings Simulation
+        function saveSettings() {
+            const btn = document.querySelector('button[onclick="saveSettings()"]');
+            const originalText = btn.innerHTML;
+            
+            // Loading state
+            btn.disabled = true;
+            btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> <span>Đang lưu...</span>`;
+            lucide.createIcons();
+
+            setTimeout(() => {
+                btn.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i> <span>Đã lưu!</span>`;
+                btn.classList.replace('bg-indigo-600', 'bg-green-600');
+                lucide.createIcons();
+
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                    btn.classList.replace('bg-green-600', 'bg-indigo-600');
+                    lucide.createIcons();
+                }, 2000);
+            }, 1000);
+        }
+
+        function resetPrompt() {
+            if(confirm("Khôi phục System Prompt về mặc định?")) {
+                document.getElementById('system-prompt').value = "Bạn là Teen Whisper, một người bạn ảo đồng hành cùng học sinh THCS và THPT (11-18 tuổi). \n- TONE & VOICE: Thân thiện, dùng ngôn ngữ Gen Z...";
+            }
+        }
+
+        // 5. GSAP Entrance
+        window.onload = () => {
+            gsap.from(".gs-reveal", { y: 20, opacity: 0, duration: 0.6, stagger: 0.15, ease: "power2.out" });
+        }
+    </script>
+</body>
+</html>

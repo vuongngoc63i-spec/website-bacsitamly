@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Kiến thức (RAG) - Teen Whisper Admin</title>
+   
+    <!-- 1. FONTS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
+
+    <!-- 2. ICONS -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- 3. STYLING -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        display: ['"Quicksand"', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            primary: '#6366F1',
+                            bg: '#F8FAFC',
+                            surface: '#FFFFFF',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { background-color: #F1F5F9; color: #334155; }
+
+        /* Sidebar Styling */
+        .sidebar-link {
+            display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem;
+            border-radius: 0.75rem; font-weight: 500; color: #64748B; transition: all 0.2s;
+        }
+        .sidebar-link:hover, .sidebar-link.active { background-color: #EEF2FF; color: #6366F1; }
+        .sidebar-link.active { font-weight: 600; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
+
+        /* Upload Zone */
+        .upload-zone {
+            background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='16' ry='16' stroke='%236366F1FF' stroke-width='2' stroke-dasharray='12%2c 12' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+            transition: all 0.3s ease;
+        }
+        .upload-zone:hover { background-color: #EEF2FF; }
+
+        /* Custom Scrollbar for Chat */
+        .chat-scroll::-webkit-scrollbar { width: 6px; }
+        .chat-scroll::-webkit-scrollbar-track { background: transparent; }
+        .chat-scroll::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
+
+        /* Panic Button Animation */
+        @keyframes urgent-pulse {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        .panic-btn-admin:hover { animation: urgent-pulse 1.5s infinite; }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden font-sans">
+
+    <!-- 1. SIDEBAR -->
+    <aside id="sidebar" class="w-64 bg-white border-r border-slate-200 hidden md:flex flex-col h-full fixed md:relative z-20 transition-transform transform -translate-x-full md:translate-x-0">
+        <div class="h-16 flex items-center px-6 border-b border-slate-100">
+            <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold mr-3">T</div>
+            <span class="font-display font-bold text-xl text-slate-800">TeenWhisper</span>
+        </div>
+
+        <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+            <p class="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Tổng quan</p>
+            <a href="#" class="sidebar-link"><i data-lucide="layout-dashboard" class="w-5 h-5"></i> Dashboard</a>
+            
+            <p class="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mt-6 mb-2">Nội dung</p>
+            <a href="#" class="sidebar-link active"><i data-lucide="database" class="w-5 h-5"></i> Quản lý Tri thức (RAG)</a>
+            <a href="#" class="sidebar-link"><i data-lucide="message-square" class="w-5 h-5"></i> Lịch sử Chat</a>
+            <a href="#" class="sidebar-link"><i data-lucide="alert-triangle" class="w-5 h-5 text-red-500"></i> Báo cáo Khẩn cấp</a>
+
+            <p class="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mt-6 mb-2">Hệ thống</p>
+            <a href="#" class="sidebar-link"><i data-lucide="settings" class="w-5 h-5"></i> Cấu hình Bot</a>
+        </nav>
+
+        <div class="p-4 border-t border-slate-100">
+            <div class="flex items-center gap-3">
+                <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=100" class="w-10 h-10 rounded-full">
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-slate-900 truncate">Admin User</p>
+                    <p class="text-xs text-slate-500 truncate">Content Manager</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Overlay Mobile -->
+    <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/50 z-10 hidden md:hidden"></div>
+
+    <!-- 2. MAIN CONTENT -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden bg-[#F8FAFC]">
+        
+        <!-- Header -->
+        <header class="h-16 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-6 z-10 sticky top-0">
+            <div class="flex items-center gap-4">
+                <button onclick="toggleSidebar()" class="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                <div>
+                    <h2 class="text-lg font-bold text-slate-800 font-display">Cơ sở Tri thức (RAG)</h2>
+                    <p class="text-xs text-slate-500 hidden sm:block">Nạp dữ liệu y khoa và tâm lý để AI học</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                 <!-- NÚT THOÁT NHANH -->
+                 <button onclick="triggerQuickExit()" class="panic-btn-admin flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-full font-bold shadow-md transition-transform active:scale-95">
+                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                    <span class="hidden sm:inline">Thoát nhanh</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Body Content -->
+        <div class="flex-1 p-6 overflow-hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
+                
+                <!-- COLUMN 1 & 2: KNOWLEDGE MANAGEMENT (Chiếm 2/3) -->
+                <div class="lg:col-span-2 flex flex-col gap-6 overflow-hidden">
+                    
+                    <!-- A. Upload Area -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 gs-reveal">
+                        <div class="upload-zone rounded-2xl p-8 text-center cursor-pointer group" onclick="document.getElementById('file-upload').click()">
+                            <input type="file" id="file-upload" class="hidden" multiple accept=".pdf,.docx,.txt">
+                            <div class="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                                <i data-lucide="upload-cloud" class="w-8 h-8"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-slate-800">Kéo thả hoặc chọn tài liệu</h3>
+                            <p class="text-sm text-slate-500 mt-2">Hỗ trợ PDF, DOCX, TXT. Tối đa 10MB/file.</p>
+                            <p class="text-xs text-indigo-500 font-medium mt-4 bg-indigo-50 inline-block px-3 py-1 rounded-full">
+                                Dữ liệu sẽ được mã hóa và index vào Vector DB
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- B. Document List -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 flex-1 flex flex-col overflow-hidden gs-reveal">
+                        <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                            <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                                <i data-lucide="files" class="w-4 h-4 text-slate-500"></i> Danh sách tài liệu (5)
+                            </h3>
+                            <div class="flex gap-2">
+                                <button class="p-1.5 text-slate-400 hover:text-indigo-600 rounded hover:bg-white"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
+                                <button class="p-1.5 text-slate-400 hover:text-indigo-600 rounded hover:bg-white"><i data-lucide="filter" class="w-4 h-4"></i></button>
+                            </div>
+                        </div>
+                        
+                        <div class="overflow-y-auto flex-1">
+                            <table class="w-full text-sm text-left">
+                                <thead class="text-xs text-slate-500 uppercase bg-slate-50 sticky top-0">
+                                    <tr>
+                                        <th class="px-6 py-3">Tên file</th>
+                                        <th class="px-6 py-3">Kích thước</th>
+                                        <th class="px-6 py-3">Trạng thái</th>
+                                        <th class="px-6 py-3 text-right">Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100" id="file-list-body">
+                                    <!-- Item 1 -->
+                                    <tr class="hover:bg-slate-50 transition-colors">
+                                        <td class="px-6 py-4 font-medium text-slate-800 flex items-center gap-3">
+                                            <i data-lucide="file-text" class="w-5 h-5 text-red-500"></i>
+                                            Giao_duc_gioi_tinh_2025.pdf
+                                        </td>
+                                        <td class="px-6 py-4 text-slate-500">2.4 MB</td>
+                                        <td class="px-6 py-4">
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-green-600"></span> Active
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 text-right">
+                                            <button class="text-slate-400 hover:text-red-600"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                                        </td>
+                                    </tr>
+                                    <!-- Item 2 -->
+                                    <tr class="hover:bg-slate-50 transition-colors">
+                                        <td class="px-6 py-4 font-medium text-slate-800 flex items-center gap-3">
+                                            <i data-lucide="file-text" class="w-5 h-5 text-blue-500"></i>
+                                            Tam_ly_tuoi_day_thi.docx
+                                        </td>
+                                        <td class="px-6 py-4 text-slate-500">850 KB</td>
+                                        <td class="px-6 py-4">
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-green-600"></span> Active
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 text-right">
+                                            <button class="text-slate-400 hover:text-red-600"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                                        </td>
+                                    </tr>
+                                    <!-- Item 3 (Processing) -->
+                                    <tr class="hover:bg-slate-50 transition-colors bg-yellow-50/50">
+                                        <td class="px-6 py-4 font-medium text-slate-800 flex items-center gap-3">
+                                            <i data-lucide="file-text" class="w-5 h-5 text-slate-500"></i>
+                                            Huong_dan_chong_xam_hai.pdf
+                                        </td>
+                                        <td class="px-6 py-4 text-slate-500">1.2 MB</td>
+                                        <td class="px-6 py-4">
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 animate-pulse">
+                                                <i data-lucide="loader-2" class="w-3 h-3 animate-spin"></i> Indexing...
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 text-right">
+                                            <button class="text-slate-300 cursor-not-allowed"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- COLUMN 3: TEST CHAT SIMULATOR (Chiếm 1/3) -->
+                <div class="lg:col-span-1 bg-white rounded-2xl shadow-lg border border-indigo-100 flex flex-col overflow-hidden gs-reveal relative">
+                    <!-- Ribbon -->
+                    <div class="absolute top-0 right-0 bg-indigo-600 text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg z-10">ADMIN PREVIEW</div>
+                    
+                    <!-- Chat Header -->
+                    <div class="p-4 border-b border-slate-100 bg-slate-50">
+                        <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                            <i data-lucide="bot" class="w-5 h-5 text-indigo-600"></i> Test Chatbot
+                        </h3>
+                        <p class="text-xs text-slate-500 mt-1">Kiểm tra phản hồi dựa trên dữ liệu vừa nạp.</p>
+                    </div>
+
+                    <!-- Chat History -->
+                    <div class="flex-1 overflow-y-auto p-4 space-y-4 chat-scroll bg-[#F8FAFC]" id="chat-box">
+                        <!-- Bot Msg -->
+                        <div class="flex gap-3">
+                            <div class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0 text-indigo-600 font-bold text-xs">AI</div>
+                            <div class="bg-white border border-slate-200 p-3 rounded-2xl rounded-tl-none text-sm text-slate-600 shadow-sm">
+                                Chào Admin! Dữ liệu mới đã được cập nhật. Bạn muốn test chủ đề nào?
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chat Input -->
+                    <div class="p-3 border-t border-slate-100 bg-white">
+                        <form onsubmit="handleTestChat(event)" class="relative">
+                            <input type="text" id="chat-input" placeholder="Hỏi thử về tài liệu vừa upload..." class="w-full pl-4 pr-12 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all">
+                            <button type="submit" class="absolute right-2 top-1.5 p-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors">
+                                <i data-lucide="send" class="w-4 h-4"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- JS Logic -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script>
+        lucide.createIcons();
+
+        // 1. Sidebar Logic
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.toggle('-translate-x-full');
+            sidebar.classList.toggle('absolute');
+            overlay.classList.toggle('hidden');
+        }
+
+        // 2. Panic Button
+        function triggerQuickExit() {
+            document.title = "Google";
+            window.location.replace("https://www.google.com");
+        }
+        document.addEventListener('keydown', (e) => {
+            if (e.key === "Escape") triggerQuickExit();
+        });
+
+        // 3. File Upload Simulation
+        const fileInput = document.getElementById('file-upload');
+        fileInput.addEventListener('change', (e) => {
+            const files = e.target.files;
+            if (files.length > 0) {
+                const fileName = files[0].name;
+                const fileSize = (files[0].size / 1024 / 1024).toFixed(2) + ' MB';
+                
+                // Add Row Animation
+                const tbody = document.getElementById('file-list-body');
+                const newRow = document.createElement('tr');
+                newRow.className = "hover:bg-slate-50 transition-colors bg-indigo-50/30";
+                newRow.innerHTML = `
+                    <td class="px-6 py-4 font-medium text-slate-800 flex items-center gap-3">
+                        <i data-lucide="file" class="w-5 h-5 text-indigo-500"></i> ${fileName}
+                    </td>
+                    <td class="px-6 py-4 text-slate-500">${fileSize}</td>
+                    <td class="px-6 py-4">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 animate-pulse">
+                            <i data-lucide="loader-2" class="w-3 h-3 animate-spin"></i> Processing...
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                         <button class="text-slate-300 cursor-not-allowed"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    </td>
+                `;
+                
+                // Prepend to top
+                tbody.insertBefore(newRow, tbody.firstChild);
+                lucide.createIcons();
+
+                // Simulate processing done after 3s
+                setTimeout(() => {
+                    newRow.classList.remove("bg-indigo-50/30");
+                    const statusCell = newRow.querySelector('td:nth-child(3)');
+                    statusCell.innerHTML = `
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            <span class="w-1.5 h-1.5 rounded-full bg-green-600"></span> Active
+                        </span>
+                    `;
+                    const actionCell = newRow.querySelector('td:nth-child(4) button');
+                    actionCell.classList.remove('text-slate-300', 'cursor-not-allowed');
+                    actionCell.classList.add('text-slate-400', 'hover:text-red-600');
+                    alert(`File ${fileName} đã được mã hóa và lưu vào Vector DB thành công!`);
+                }, 3000);
+            }
+        });
+
+        // 4. Test Chat Simulation
+        function handleTestChat(e) {
+            e.preventDefault();
+            const input = document.getElementById('chat-input');
+            const chatBox = document.getElementById('chat-box');
+            const text = input.value.trim();
+            
+            if (!text) return;
+
+            // User Message
+            const userMsg = document.createElement('div');
+            userMsg.className = "flex gap-3 flex-row-reverse";
+            userMsg.innerHTML = `
+                <div class="bg-indigo-600 text-white p-3 rounded-2xl rounded-tr-none text-sm shadow-md max-w-[85%]">
+                    ${text}
+                </div>
+            `;
+            chatBox.appendChild(userMsg);
+            input.value = '';
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            // Bot Typing Simulation
+            setTimeout(() => {
+                const botMsg = document.createElement('div');
+                botMsg.className = "flex gap-3";
+                botMsg.innerHTML = `
+                    <div class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0 text-indigo-600 font-bold text-xs">AI</div>
+                    <div class="bg-white border border-slate-200 p-3 rounded-2xl rounded-tl-none text-sm text-slate-600 shadow-sm">
+                        <p>Dựa trên tài liệu <strong>"Tam_ly_tuoi_day_thi.docx"</strong> vừa cập nhật:</p>
+                        <p class="mt-1">Đây là câu trả lời thử nghiệm... (Mock response for RAG context verification).</p>
+                        <div class="mt-2 text-xs text-green-600 font-mono bg-green-50 p-1 rounded border border-green-100">
+                            Confidence Score: 0.92
+                        </div>
+                    </div>
+                `;
+                chatBox.appendChild(botMsg);
+                chatBox.scrollTop = chatBox.scrollHeight;
+                lucide.createIcons();
+            }, 1000);
+        }
+
+        // 5. GSAP Reveal
+        window.onload = () => {
+            gsap.from(".gs-reveal", { y: 20, opacity: 0, duration: 0.6, stagger: 0.15, ease: "power2.out" });
+        }
+    </script>
+</body>
+</html>

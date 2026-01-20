@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập Quản trị - Teen Whisper Admin</title>
+   
+    <!-- 1. FONTS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
+
+    <!-- 2. ICONS -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- 3. STYLING -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        display: ['"Quicksand"', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            primary: '#6366F1', /* Indigo 600 */
+                            secondary: '#A855F7', /* Purple 500 */
+                            bg: '#F8FAFC',
+                        }
+                    },
+                    animation: {
+                        'blob': 'blob 10s infinite',
+                    },
+                    keyframes: {
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #F8FAFC;
+            color: #334155;
+            overflow: hidden; /* Ngăn cuộn trang login */
+        }
+
+        /* Glassmorphism Card */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+        }
+
+        /* Input Styling */
+        .input-group {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .input-field:focus + .input-icon {
+            color: #6366F1;
+        }
+
+        .input-field:focus {
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        /* Background Blobs */
+        .blob {
+            position: absolute;
+            filter: blur(60px);
+            z-index: -1;
+            opacity: 0.7;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body class="h-screen w-full flex items-center justify-center relative">
+
+    <!-- BACKGROUND DECORATION -->
+    <div class="blob bg-indigo-200 w-96 h-96 top-0 left-0 animate-blob"></div>
+    <div class="blob bg-pink-200 w-80 h-80 bottom-0 right-0 animate-blob animation-delay-2000"></div>
+    <div class="blob bg-purple-100 w-64 h-64 bottom-20 left-20 animate-blob animation-delay-4000"></div>
+
+    <!-- MAIN LOGIN CARD -->
+    <main class="w-full max-w-md px-6">
+        <div class="glass-card rounded-3xl p-8 md:p-10 relative overflow-hidden" id="login-card">
+            
+            <!-- Logo Area -->
+            <div class="text-center mb-8 gs-item">
+                <div class="w-12 h-12 bg-gradient-to-tr from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-2xl mx-auto shadow-lg shadow-indigo-200 mb-4">
+                    T
+                </div>
+                <h1 class="font-display text-2xl font-bold text-slate-800">Admin Portal</h1>
+                <p class="text-slate-500 text-sm mt-1">Đăng nhập hệ thống quản trị Teen Whisper</p>
+            </div>
+
+            <!-- Login Form -->
+            <form onsubmit="handleLogin(event)" class="space-y-5">
+                
+                <!-- Email Input -->
+                <div class="gs-item">
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Email / Tài khoản</label>
+                    <div class="relative group">
+                        <input type="email" required placeholder="admin@teenwhisper.com" 
+                            class="input-field w-full pl-10 pr-4 py-3 rounded-xl bg-white/60 border border-slate-200 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-400 text-sm">
+                        <div class="input-icon absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 transition-colors duration-300">
+                            <i data-lucide="mail" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Password Input -->
+                <div class="gs-item">
+                    <div class="flex justify-between items-center mb-1.5 ml-1">
+                        <label class="block text-sm font-semibold text-slate-700">Mật khẩu</label>
+                        <a href="#" class="text-xs text-indigo-600 hover:text-indigo-700 font-medium hover:underline">Quên mật khẩu?</a>
+                    </div>
+                    <div class="relative group">
+                        <input type="password" id="password-input" required placeholder="••••••••" 
+                            class="input-field w-full pl-10 pr-10 py-3 rounded-xl bg-white/60 border border-slate-200 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-400 text-sm">
+                        
+                        <!-- Left Icon -->
+                        <div class="input-icon absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 transition-colors duration-300">
+                            <i data-lucide="lock" class="w-5 h-5"></i>
+                        </div>
+
+                        <!-- Toggle Visibility Icon -->
+                        <button type="button" onclick="togglePassword()" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer">
+                            <i data-lucide="eye" id="eye-icon" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Remember Me Checkbox -->
+                <div class="flex items-center gap-2 gs-item">
+                    <input type="checkbox" id="remember" class="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500 cursor-pointer">
+                    <label for="remember" class="text-sm text-slate-600 cursor-pointer select-none">Ghi nhớ đăng nhập</label>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="pt-2 gs-item">
+                    <button type="submit" id="btn-login" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-indigo-200 transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2">
+                        <span>Đăng nhập</span>
+                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </form>
+
+            <!-- Footer Info -->
+            <div class="mt-8 text-center border-t border-slate-200/60 pt-6 gs-item">
+                <p class="text-xs text-slate-400">
+                    Chỉ dành cho quản trị viên và chuyên gia được cấp quyền.<br>
+                    <a href="#" class="text-indigo-600 hover:underline">Liên hệ bộ phận kỹ thuật</a> nếu gặp sự cố.
+                </p>
+            </div>
+
+            <!-- Decor loading overlay (Hidden by default) -->
+            <div id="loading-overlay" class="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-10 hidden">
+                <div class="flex flex-col items-center">
+                    <div class="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-3"></div>
+                    <span class="text-sm font-semibold text-indigo-900 animate-pulse">Đang xác thực...</span>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer Copyright -->
+    <div class="fixed bottom-4 text-center w-full text-slate-400 text-xs opacity-60">
+        &copy; 2025 Teen Whisper. Version 1.0 Admin Build.
+    </div>
+
+    <!-- JS & GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script>
+        // Init Icons
+        lucide.createIcons();
+
+        // 1. Entrance Animation
+        window.addEventListener('load', () => {
+            const tl = gsap.timeline();
+            
+            // Card appearance
+            tl.from("#login-card", {
+                duration: 1,
+                y: 50,
+                opacity: 0,
+                ease: "power3.out"
+            })
+            // Stagger items inside
+            .from(".gs-item", {
+                duration: 0.6,
+                y: 20,
+                opacity: 0,
+                stagger: 0.1,
+                ease: "back.out(1.7)"
+            }, "-=0.5");
+        });
+
+        // 2. Toggle Password Visibility
+        function togglePassword() {
+            const input = document.getElementById("password-input");
+            const icon = document.getElementById("eye-icon");
+            
+            if (input.type === "password") {
+                input.type = "text";
+                // Change icon to eye-off (cần re-render icon nếu dùng lucide thuần, ở đây ta thay class hoặc logic đơn giản)
+                // Vì Lucide render SVG ngay lập tức, cách đơn giản nhất là remove và add lại
+                // Nhưng để đơn giản demo, ta chỉ alert hoặc đổi màu.
+                // Thực tế: icon.setAttribute("data-lucide", "eye-off"); lucide.createIcons();
+                input.classList.add("text-indigo-900");
+            } else {
+                input.type = "password";
+                input.classList.remove("text-indigo-900");
+            }
+        }
+
+        // 3. Handle Login Submit (Simulation)
+        function handleLogin(e) {
+            e.preventDefault();
+            
+            const btn = document.getElementById("btn-login");
+            const loader = document.getElementById("loading-overlay");
+
+            // Hiệu ứng bấm nút
+            gsap.to(btn, { scale: 0.95, duration: 0.1, yoyo: true, repeat: 1 });
+
+            // Show loading
+            setTimeout(() => {
+                loader.classList.remove("hidden");
+                
+                // Giả lập delay mạng 2s
+                setTimeout(() => {
+                    // Chuyển hướng thành công
+                    // window.location.href = "/dashboard.html";
+                    alert("Đăng nhập thành công! Chuyển hướng đến Dashboard...");
+                    loader.classList.add("hidden"); // Reset
+                }, 2000);
+            }, 300);
+        }
+    </script>
+</body>
+</html>

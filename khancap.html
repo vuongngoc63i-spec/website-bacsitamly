@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chúng mình ở đây bên bạn - Teen Whisper</title>
+   
+    <!-- 1. FONTS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
+
+    <!-- 2. ICONS -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- 3. STYLING -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        display: ['"Quicksand"', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            bg: '#F0F4F8',
+                            primary: '#6366F1',
+                            calm: '#818CF8', // Soft Indigo
+                        }
+                    },
+                    animation: {
+                        'heartbeat': 'heartbeat 2s infinite',
+                    },
+                    keyframes: {
+                        heartbeat: {
+                            '0%': { transform: 'scale(1)' },
+                            '14%': { transform: 'scale(1.05)' },
+                            '28%': { transform: 'scale(1)' },
+                            '42%': { transform: 'scale(1.05)' },
+                            '70%': { transform: 'scale(1)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Glassmorphism Overlay */
+        .glass-overlay {
+            background: rgba(15, 23, 42, 0.6); /* Darkened background for focus */
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        /* The Modal Card */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        /* Quick Exit Button (Luôn nổi trên cùng) */
+        .panic-btn-fixed {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 9999;
+        }
+
+        /* Fake Chat Background (Để mô phỏng ngữ cảnh) */
+        .chat-bg-blur {
+            filter: blur(4px);
+            pointer-events: none;
+            user-select: none;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 relative h-screen overflow-hidden">
+
+    <!-- 1. FAKE BACKGROUND (Mô phỏng màn hình chat đang bị dừng lại) -->
+    <div class="absolute inset-0 p-4 flex flex-col gap-4 chat-bg-blur opacity-50">
+        <div class="flex items-end gap-2">
+            <div class="w-8 h-8 rounded-full bg-indigo-200"></div>
+            <div class="bg-white p-3 rounded-2xl rounded-bl-none shadow-sm w-2/3 h-12"></div>
+        </div>
+        <div class="flex items-end gap-2 flex-row-reverse">
+            <div class="bg-indigo-600 p-3 rounded-2xl rounded-br-none shadow-sm w-1/2 h-16"></div>
+        </div>
+        <div class="flex items-end gap-2">
+            <div class="w-8 h-8 rounded-full bg-indigo-200"></div>
+            <div class="bg-white p-3 rounded-2xl rounded-bl-none shadow-sm w-3/4 h-20"></div>
+        </div>
+    </div>
+
+    <!-- 2. NÚT THOÁT KHẨN CẤP (Luôn hiển thị cao nhất) -->
+    <button onclick="triggerQuickExit()" class="panic-btn-fixed flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-full font-bold shadow-lg transition-transform active:scale-95 group">
+        <i data-lucide="log-out" class="w-5 h-5 group-hover:translate-x-1 transition-transform"></i>
+        <span class="hidden sm:inline">Thoát ra Google</span>
+        <span class="sm:hidden">THOÁT</span>
+    </button>
+
+    <!-- 3. EMERGENCY OVERLAY (Lớp phủ khẩn cấp) -->
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 glass-overlay" id="emergency-overlay">
+        
+        <!-- Modal Content -->
+        <div class="glass-card w-full max-w-md rounded-3xl overflow-hidden relative transform scale-95 opacity-0" id="emergency-card">
+            
+            <!-- Decorative Header Shape -->
+            <div class="h-24 bg-gradient-to-r from-indigo-500 to-purple-500 relative">
+                <!-- Icon An Toàn -->
+                <div class="absolute -bottom-10 left-1/2 -translate-x-1/2 w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-lg border-4 border-white">
+                    <i data-lucide="life-buoy" class="w-10 h-10 text-indigo-500"></i>
+                </div>
+                <!-- Abstract circles -->
+                <div class="absolute top-[-20px] left-[-20px] w-24 h-24 bg-white/20 rounded-full"></div>
+                <div class="absolute bottom-[-10px] right-[-10px] w-16 h-16 bg-white/10 rounded-full"></div>
+            </div>
+
+            <!-- Body Content -->
+            <div class="pt-12 pb-8 px-8 text-center">
+                
+                <h2 class="font-display text-2xl font-bold text-slate-800 mb-2">
+                    Bạn không một mình đâu.
+                </h2>
+                
+                <p class="text-slate-600 text-sm leading-relaxed mb-6">
+                    Teen Whisper cảm thấy bạn đang trải qua những cảm xúc rất khó khăn. Hãy để chúng mình giúp bạn kết nối với những người có thể lắng nghe và bảo vệ bạn ngay lúc này nhé.
+                </p>
+
+                <!-- PRIMARY ACTION: CALL 111 -->
+                <a href="tel:111" class="block w-full group relative mb-4">
+                    <div class="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-pink-500 rounded-2xl blur opacity-30 group-hover:opacity-60 transition duration-200"></div>
+                    <button class="relative w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white py-4 px-6 rounded-2xl shadow-xl flex items-center justify-center gap-3 animate-heartbeat">
+                        <i data-lucide="phone-call" class="w-6 h-6"></i>
+                        <div class="text-left">
+                            <span class="block text-xs font-medium opacity-90 uppercase tracking-wide">Gọi khẩn cấp (Miễn phí)</span>
+                            <span class="block text-2xl font-bold font-display">Tổng đài 111</span>
+                        </div>
+                    </button>
+                </a>
+
+                <!-- SECONDARY ACTIONS -->
+                <div class="space-y-3">
+                    <!-- Gọi chuyên gia tâm lý -->
+                    <a href="tel:1900969680" class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors text-left group">
+                        <div class="bg-green-100 p-2 rounded-full text-green-600 group-hover:scale-110 transition-transform">
+                            <i data-lucide="heart-handshake" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <span class="block text-sm font-bold text-slate-700">Đường dây nóng Ngày Mai</span>
+                            <span class="block text-xs text-slate-500">096 306 1414 (Cước phí thường)</span>
+                        </div>
+                    </a>
+
+                    <!-- Nghe nhạc trấn an -->
+                    <button onclick="playCalmMusic()" class="w-full flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors text-left group">
+                        <div class="bg-pink-100 p-2 rounded-full text-pink-600 group-hover:scale-110 transition-transform">
+                            <i data-lucide="music" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <span class="block text-sm font-bold text-slate-700">Hít thở sâu & Nghe nhạc</span>
+                            <span class="block text-xs text-slate-500">Giúp bình tĩnh lại cảm xúc</span>
+                        </div>
+                    </button>
+                </div>
+
+                <!-- Footer Link -->
+                <div class="mt-6 pt-4 border-t border-slate-100">
+                    <button onclick="backToHome()" class="text-slate-400 hover:text-indigo-600 text-sm font-medium transition-colors flex items-center justify-center gap-1 mx-auto">
+                        <i data-lucide="home" class="w-4 h-4"></i>
+                        Quay về trang chủ
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JS Logic & Animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script>
+        // Init Icons
+        lucide.createIcons();
+
+        // 1. ANIMATION: Xuất hiện nhẹ nhàng (tránh giật mình)
+        window.addEventListener('load', () => {
+            const tl = gsap.timeline();
+            
+            // Fade in background overlay
+            tl.to("#emergency-overlay", {
+                duration: 0.5,
+                backgroundColor: "rgba(15, 23, 42, 0.7)",
+                ease: "power2.out"
+            })
+            // Pop up card (Elastic effect)
+            .to("#emergency-card", {
+                scale: 1,
+                opacity: 1,
+                duration: 0.8,
+                ease: "back.out(1.2)"
+            }, "-=0.3");
+        });
+
+        // 2. CHỨC NĂNG: THOÁT NHANH (QUAN TRỌNG NHẤT)
+        function triggerQuickExit() {
+            document.title = "Google"; 
+            window.location.replace("https://www.google.com");
+        }
+
+        // Thoát bằng phím ESC
+        document.addEventListener('keydown', function(event) {
+            if (event.key === "Escape") {
+                triggerQuickExit();
+            }
+        });
+
+        // 3. CHỨC NĂNG PHỤ
+        function playCalmMusic() {
+            // Mở playlist Lofi/Piano nhẹ nhàng trên Youtube/Spotify
+            window.open("https://www.youtube.com/watch?v=lTRiuFIWV54", "_blank");
+        }
+
+        function backToHome() {
+            // Quay về màn hình chính
+            window.location.href = "/"; // Demo only
+            console.log("Back to Home");
+        }
+    </script>
+</body>
+</html>
