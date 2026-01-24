@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Teen Whisper - Hệ Sinh Thái Toàn Diện</title>
+    
+    <!-- FONTS & ICONS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'], display: ['"Quicksand"', 'sans-serif'] },
+                    colors: {
+                        brand: { blue: '#E0F2FE', pink: '#FCE7F3', purple: '#F3E8FF', primary: '#6366F1', text: '#334155' }
+                    },
+                    animation: { 'float': 'float 6s ease-in-out infinite', 'blob': 'blob 10s infinite' }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { background-color: #F8FAFC; overflow-x: hidden; height: 100vh; margin: 0; }
+        .glass-panel { background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.5); }
+        .blob-bg { position: absolute; filter: blur(60px); z-index: -1; opacity: 0.6; }
+        .bubble-user { background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%); color: white; border-radius: 18px 18px 4px 18px; }
+        .bubble-bot { background: white; color: #334155; border-radius: 18px 18px 18px 4px; border: 1px solid #F1F5F9; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .typing-dot { width: 6px; height: 6px; background-color: #94A3B8; border-radius: 50%; animation: typing 1.4s infinite ease-in-out both; }
+        @keyframes typing { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .hidden-screen { display: none !important; }
+        .chat-footer-elevated { padding-bottom: calc(2rem + env(safe-area-inset-bottom)); }
+        .danger-overlay { background: rgba(220, 38, 38, 0.98); backdrop-filter: blur(10px); z-index: 1000; }
+    </style>
+</head>
+<body class="text-brand-text relative h-full">
+
+    <div class="blob-bg bg-blue-200 w-96 h-96 rounded-full top-0 left-0 animate-blob"></div>
+    <div class="blob-bg bg-purple-200 w-96 h-96 rounded-full bottom-0 right-0 animate-blob animation-delay-2000"></div>
+
+    <!-- ============================================ -->
+    <!-- MÀN HÌNH 1: TRANG CHỦ -->
+    <!-- ============================================ -->
+    <div id="landing-page" class="flex flex-col h-full w-full relative z-10">
+        <header class="w-full p-4 flex justify-between items-center z-50 fixed top-0 bg-white/30 backdrop-blur-md border-b border-white/20">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold shadow-lg">T</div>
+                <span class="font-display font-bold text-lg text-indigo-900">TeenWhisper</span>
+            </div>
+            <button onclick="triggerQuickExit()" class="bg-red-50 text-red-600 px-4 py-2 rounded-full border border-red-200 text-sm font-semibold shadow-sm">Thoát nhanh Google</button>
+        </header>
+
+        <main class="flex-grow flex items-center justify-center pt-24 pb-12 px-4">
+            <div class="container max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <div class="order-2 md:order-1 text-center md:text-left space-y-6">
+                    <h1 class="font-display text-4xl md:text-6xl font-bold text-slate-800 leading-tight">Chào bạn, mình là <span class="text-indigo-600">Teen Whisper</span></h1>
+                    <p class="text-lg text-slate-600">Lắng nghe mọi tâm tư của cậu. Ẩn danh. Bảo mật. Không phán xét.</p>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+                        <button onclick="showScreen('#multi-dim-chat')" class="bg-indigo-600 text-white px-8 py-4 rounded-2xl shadow-xl hover:scale-105 active:scale-95 flex items-center gap-3 font-semibold text-lg">
+                            <i data-lucide="message-circle-heart"></i><span>Bắt đầu trò chuyện</span>
+                        </button>
+                        <button onclick="showScreen('#library-page')" class="bg-white text-indigo-900 border border-indigo-100 px-8 py-4 rounded-2xl shadow-sm flex items-center gap-3 font-semibold text-lg transition-all">
+                            <i data-lucide="book-open"></i><span>Khám phá thư viện</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="order-1 md:order-2 flex justify-center mascot-col">
+                    <div class="animate-float w-64 h-64 md:w-96 md:h-96 rounded-full bg-gradient-to-tr from-indigo-200 to-pink-200 flex items-center justify-center shadow-2xl glass-panel relative">
+                        <img src="https://cdn-icons-png.flaticon.com/512/4712/4712038.png" class="w-[75%] h-[75%] object-contain">
+                        <div class="absolute -top-4 -right-4 bg-white px-4 py-2 rounded-xl shadow-lg text-indigo-600 font-bold animate-bounce text-sm">👋 Chào cậu!</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- MÀN HÌNH 2: CHAT ĐA CHIỀU -->
+    <!-- ============================================ -->
+    <div id="multi-dim-chat" class="hidden-screen fixed inset-0 z-[60] flex flex-col h-full bg-[#F8FAFC]">
+        <!-- Role Selection -->
+        <div id="role-selection-screen" class="absolute inset-0 z-50 flex flex-col items-center justify-center p-6 bg-white/40 backdrop-blur-md">
+            <div class="glass-panel p-8 rounded-3xl shadow-2xl max-w-md w-full text-center">
+                <h1 class="text-2xl font-display font-bold text-slate-800 mb-6">Bạn muốn tâm sự với ai?</h1>
+                <div class="space-y-3 mb-6">
+                    <button onclick="selectRole('friend')" class="w-full flex items-center p-4 rounded-xl border bg-white hover:bg-indigo-50 transition-all text-left shadow-sm">
+                        <div class="text-2xl mr-4">😎</div>
+                        <div><h3 class="font-bold text-sm text-slate-700">Người Bạn Thân</h3><p class="text-[11px] text-slate-400">Ngôn ngữ Gen Z, xả stress cực mạnh</p></div>
+                    </button>
+                    <button onclick="selectRole('parent')" class="w-full flex items-center p-4 rounded-xl border bg-white hover:bg-orange-50 transition-all text-left shadow-sm">
+                        <div class="text-2xl mr-4">🏡</div>
+                        <div><h3 class="font-bold text-sm text-slate-700">Bố Mẹ Tâm Lý</h3><p class="text-[11px] text-slate-400">Ấm áp, thấu hiểu, yêu thương</p></div>
+                    </button>
+                    <button onclick="selectRole('expert')" class="w-full flex items-center p-4 rounded-xl border bg-white hover:bg-teal-50 transition-all text-left shadow-sm">
+                        <div class="text-2xl mr-4">👩‍⚕️</div>
+                        <div><h3 class="font-bold text-sm text-slate-700">Chuyên Gia</h3><p class="text-[11px] text-slate-400">Khoa học, giải pháp chuyên sâu</p></div>
+                    </button>
+                </div>
+                <div class="flex flex-col gap-3">
+                    <button onclick="showScreen('#landing-page')" class="text-sm text-slate-400 underline">Quay lại trang chủ</button>
+                    <button onclick="triggerQuickExit()" class="w-full bg-red-600 text-white font-bold py-3 rounded-xl shadow-lg flex items-center justify-center gap-2 active:scale-95">
+                        <i data-lucide="log-out" class="w-4 h-4"></i> THOÁT NHANH SANG GOOGLE
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat UI -->
+        <div id="multi-chat-ui" class="flex flex-col h-full opacity-0 hidden-screen">
+            <header class="h-16 flex items-center justify-between px-4 glass-panel shrink-0 z-10">
+                <button onclick="resetMultiChat()"><i data-lucide="chevron-left" class="w-6 h-6"></i></button>
+                <div class="flex flex-col items-center">
+                    <span id="multi-bot-avatar" class="text-lg leading-none">🤖</span>
+                    <span id="multi-bot-name" class="text-[10px] font-bold mt-1 text-indigo-600 uppercase">TEEN WHISPER</span>
+                </div>
+                <button onclick="triggerQuickExit()" class="text-red-500 font-bold text-xs border border-red-100 px-2 py-1 rounded-full">THOÁT</button>
+            </header>
+            <main id="multi-chat-container" class="flex-grow p-4 overflow-y-auto no-scrollbar space-y-4 pt-6 bg-[#F1F5F9]/30">
+                <div id="multi-message-list" class="space-y-4"></div>
+                <div id="multi-typing" class="hidden flex gap-2"><div class="bubble-bot px-4 py-3 flex gap-1"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>
+                <div id="multi-anchor" class="h-20"></div>
+            </main>
+            <footer class="bg-white border-t chat-footer-elevated px-4 pt-4 shadow-lg">
+                <div class="max-w-3xl mx-auto flex items-end gap-2">
+                    <textarea id="multi-chat-input" rows="1" class="chat-input-global flex-grow bg-slate-100 rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-300 outline-none resize-none transition-all" placeholder="Nhập tin nhắn tâm sự..." oninput="autoExpand(this)"></textarea>
+                    <button onclick="sendMultiMessage()" class="chat-btn-global bg-indigo-600 text-white p-3 rounded-xl shadow-lg active:scale-90 transition-all"><i data-lucide="send" class="w-5 h-5"></i></button>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- MÀN HÌNH 3: THƯ VIỆN -->
+    <!-- ============================================ -->
+    <div id="library-page" class="hidden-screen fixed inset-0 z-[70] bg-[#F8FAFC] flex flex-col">
+        <header class="h-16 flex items-center justify-between px-4 glass-panel shrink-0">
+            <button onclick="showScreen('#landing-page')" class="p-2 hover:bg-slate-100 rounded-full transition-colors"><i data-lucide="arrow-left" class="w-6 h-6"></i></button>
+            <h1 class="font-display font-bold text-lg text-brand-dark">Thư viện Kiến thức</h1>
+            <button onclick="triggerQuickExit()" class="bg-red-50 text-red-600 px-3 py-1.5 rounded-full text-xs font-bold border border-red-100">Thoát</button>
+        </header>
+        <div class="px-4 py-4 shrink-0 bg-white shadow-sm">
+            <div class="relative max-w-2xl mx-auto">
+                <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"></i>
+                <input type="text" id="lib-search" oninput="searchArticles()" class="w-full pl-12 pr-4 py-3 rounded-2xl border-none bg-slate-100 outline-none shadow-inner" placeholder="Tìm mụn, chiều cao, áp lực, crush...">
+            </div>
+        </div>
+        <div class="flex-grow overflow-y-auto no-scrollbar p-4" id="lib-scroll-area">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-24" id="article-grid"></div>
+        </div>
+        <nav class="h-20 glass-panel flex justify-around items-center px-4 shrink-0 bg-white/90">
+            <button onclick="showScreen('#companion-chat')" class="flex flex-col items-center text-slate-400 hover:text-indigo-600 transition-colors"><i data-lucide="message-circle-heart" class="w-6 h-6"></i><span class="text-[10px] font-bold">Chat</span></button>
+            <button onclick="showScreen('#landing-page')" class="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center text-white shadow-lg -mt-8 border-4 border-white transition-transform hover:scale-110">T</button>
+            <button class="flex flex-col items-center text-indigo-600"><i data-lucide="book-open" class="w-6 h-6"></i><span class="text-[10px] font-bold">Thư viện</span></button>
+        </nav>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- MÀN HÌNH 4: CHI TIẾT BÀI VIẾT (MỚI) -->
+    <!-- ============================================ -->
+    <div id="article-detail" class="hidden-screen fixed inset-0 z-[90] bg-white flex flex-col">
+        <header class="h-16 flex items-center px-4 border-b">
+            <button onclick="closeArticle()"><i data-lucide="x" class="w-6 h-6 text-slate-500"></i></button>
+            <span class="ml-4 font-bold text-slate-800" id="detail-header-title">Thông tin chi tiết</span>
+        </header>
+        <main class="flex-grow overflow-y-auto p-6 space-y-6 no-scrollbar">
+            <img id="detail-img" class="w-full h-56 object-cover rounded-3xl shadow-lg">
+            <div>
+                <span id="detail-tag" class="text-[10px] font-bold px-2 py-1 rounded-lg bg-indigo-50 text-indigo-600 uppercase"></span>
+                <h1 id="detail-title" class="text-2xl font-display font-bold text-slate-800 mt-4 leading-tight"></h1>
+            </div>
+            <p id="detail-content" class="text-slate-600 leading-relaxed text-sm"></p>
+            <div class="bg-indigo-50 p-5 rounded-2xl border border-indigo-100 mt-6">
+                <p class="text-xs text-indigo-600 font-bold mb-2 flex items-center gap-1"><i data-lucide="link" class="w-3 h-3"></i> TÌM HIỂU THÊM TẠI:</p>
+                <a id="detail-link" href="#" target="_blank" class="text-indigo-700 font-bold text-sm underline break-all"></a>
+            </div>
+            <div class="h-10"></div>
+        </main>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- MÀN HÌNH 5: BẠN TÂM GIAO -->
+    <!-- ============================================ -->
+    <div id="companion-chat" class="hidden-screen fixed inset-0 z-[100] flex flex-col bg-white">
+        <header class="h-16 flex items-center justify-between px-4 border-b shrink-0 z-50 glass-panel">
+            <button onclick="showScreen('#library-page')" class="p-2 hover:bg-slate-100 rounded-full transition-colors"><i data-lucide="chevron-left" class="w-6 h-6"></i></button>
+            <div class="flex items-center gap-2">
+                <div class="w-10 h-10 rounded-full bg-indigo-100 border-2 border-white overflow-hidden flex items-center justify-center"><img src="https://cdn-icons-png.flaticon.com/512/4712/4712038.png" class="w-8 h-8"></div>
+                <h1 class="font-display font-bold text-slate-800 text-sm">Bạn Tâm Giao</h1>
+            </div>
+            <button onclick="clearCompanionChat()" class="p-2 text-slate-300 hover:text-red-500 transition-colors"><i data-lucide="trash-2" class="w-5 h-5"></i></button>
+        </header>
+        <main id="companion-chat-container" class="flex-grow overflow-y-auto p-4 space-y-4 no-scrollbar bg-[#F8FAFC]">
+            <div id="companion-message-list" class="space-y-4 pt-4">
+                <div class="flex items-end gap-2"><div class="bubble-bot px-4 py-3 max-w-[85%] text-sm">Chào cậu! 👋 Mình có thể giải đáp mọi thắc mắc của cậu. Cậu muốn hỏi về gì?</div></div>
+            </div>
+            <div id="companion-typing" class="hidden flex gap-1"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>
+            <div id="companion-anchor" class="h-32"></div>
+        </main>
+        <footer class="bg-white border-t chat-footer-elevated px-4 pt-3 shadow-lg">
+            <div class="flex gap-2 overflow-x-auto pb-3 no-scrollbar mb-3" id="companion-quick-chips"></div>
+            <div class="max-w-3xl mx-auto flex items-end gap-2">
+                <textarea id="companion-chat-input" rows="1" class="chat-input-global flex-grow bg-slate-100 rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-300 outline-none resize-none" placeholder="Tâm sự đi cậu..." oninput="autoExpand(this)"></textarea>
+                <button onclick="sendCompanionMessage()" class="chat-btn-global bg-indigo-600 text-white p-3 rounded-xl shadow-lg active:scale-90"><i data-lucide="send" class="w-5 h-5"></i></button>
+            </div>
+        </footer>
+    </div>
+
+    <!-- MÀN HÌNH KHẨN CẤP -->
+    <div id="emergency-overlay" class="fixed inset-0 danger-overlay hidden flex flex-col items-center justify-center p-6 text-white text-center">
+        <i data-lucide="heart" class="w-24 h-24 mb-6 text-white animate-pulse"></i>
+        <h2 class="text-3xl font-bold mb-4 font-display leading-tight">Cậu không một mình đâu!</h2>
+        <p class="max-w-xs mb-8 text-lg font-medium opacity-90">Đừng có suy nghĩ tiêu cực, có mình luôn ở đây với bạn. Hãy để các chuyên gia giúp cậu nhé!</p>
+        <a href="tel:111" class="w-full max-w-xs bg-white text-red-600 font-bold py-5 rounded-2xl shadow-2xl flex items-center justify-center gap-3 text-xl mb-4 hover:scale-105 transition-all">
+            <i data-lucide="phone-call"></i> GỌI TỔNG ĐÀI 111
+        </a>
+        <button onclick="document.getElementById('emergency-overlay').classList.add('hidden')" class="underline opacity-70 hover:opacity-100 transition-opacity">Tôi ổn rồi, quay lại chat</button>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script>
+        lucide.createIcons();
+
+        // 1. CẤU HÌNH AN TOÀN TOÀN CẦU
+        const DANGER_WORDS = ['chết', 'nhảy lầu', 'tự tử', 'tự sát', 'không muốn sống', 'nhảy cầu', 'suicide', 'die', 'kết liễu'];
+        const SWEAR_WORDS = ['dcm', 'địt', 'cút', 'cmm', 'mẹ mày', 'mọe', 'vcl', 'đm', 'lồn', 'cc', 'đéo'];
+        
+        let swearCount = 0;
+        let isLocked = false;
+        let lockTimer = null;
+
+        function updateAllInputs(locked, message = "Nhập tin nhắn...") {
+            const inputs = document.querySelectorAll('.chat-input-global');
+            const btns = document.querySelectorAll('.chat-btn-global');
+            inputs.forEach(input => {
+                input.disabled = locked;
+                input.placeholder = message;
+                input.style.opacity = locked ? "0.5" : "1";
+            });
+            btns.forEach(btn => {
+                btn.disabled = locked;
+                btn.style.opacity = locked ? "0.5" : "1";
+            });
+        }
+
+        function lockGlobalChat(seconds) {
+            isLocked = true;
+            let timeLeft = seconds;
+            
+            if(lockTimer) clearInterval(lockTimer);
+            
+            updateAllInputs(true, `Bị khóa trong ${timeLeft}s...`);
+
+            lockTimer = setInterval(() => {
+                timeLeft--;
+                if (timeLeft <= 0) {
+                    clearInterval(lockTimer);
+                    isLocked = false;
+                    updateAllInputs(false, "Nhập tin nhắn...");
+                } else {
+                    updateAllInputs(true, `Bị khóa trong ${timeLeft}s...`);
+                }
+            }, 1000);
+        }
+
+        function checkSafety(text) {
+            const lowText = text.toLowerCase();
+            if (DANGER_WORDS.some(word => lowText.includes(word))) {
+                document.getElementById('emergency-overlay').classList.remove('hidden');
+                return 'danger';
+            }
+            if (SWEAR_WORDS.some(word => lowText.includes(word))) {
+                swearCount++;
+                if (swearCount <= 2) return "Cậu ơi, đừng dùng những từ ngữ như vậy nhé. Hãy tôn trọng nhau nè! 😊";
+                if (swearCount === 3) return "CẢNH BÁO: Nếu cậu tiếp tục dùng từ ngữ không phù hợp, mình sẽ khóa chat của cậu!";
+                if (swearCount === 4) {
+                    lockGlobalChat(60); // 1 phút
+                    return "BẠN ĐÃ BỊ KHÓA CHAT 1 PHÚT TRÊN TOÀN HỆ THỐNG.";
+                }
+                if (swearCount >= 5) {
+                    lockGlobalChat(600); // 10 phút
+                    return "BẠN ĐÃ BỊ KHÓA CHAT 10 PHÚT TRÊN TOÀN HỆ THỐNG.";
+                }
+            }
+            return 'safe';
+        }
+
+        // 2. DỮ LIỆU THƯ VIỆN (50 CHỦ ĐỀ)
+        const libraryData = [
+            { id: 1, tag: 'DẬY THÌ', title: "Mụn trứng cá & Cách xử lý", img: "https://images.unsplash.com/photo-1596755389378-c31d21fd1273?w=500", content: "Mụn trứng cá là hiện tượng phổ biến ở tuổi dậy thì do thay đổi nội tiết tố. Để hạn chế mụn, hãy rửa mặt 2 lần mỗi ngày, không tự ý nặn mụn và giữ ga gối luôn sạch sẽ.", link: "https://suckhoedoisong.vn/mun-trung-ca-tuoi-day-thi-nguyen-nhan-va-cach-dieu-tri-169211019154407833.htm", search: "mun trung ca" },
+            { id: 2, tag: 'THỂ CHẤT', title: "Cách tăng chiều cao tối đa", img: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=500", content: "Để cao lớn hơn, bạn cần ngủ trước 22h đêm để hormone tăng trưởng hoạt động mạnh nhất, uống 500ml sữa mỗi ngày và tập các bài kéo giãn như hít xà hoặc bơi lội.", link: "https://moh.gov.vn/chuong-trinh-muc-tieu-quoc-gia/-/asset_publisher/7NG969m9N9N/content/bi-quyet-giup-tre-tang-chieu-cao-toi-u", search: "chieu cao" },
+            { id: 3, tag: 'TÌNH CẢM', title: "Vượt qua cú sốc thất tình", img: "https://images.unsplash.com/photo-1516575334481-f85287c2c82d?w=500", content: "Cảm giác đau buồn khi chia tay là bình thường. Hãy cho phép bản thân được khóc, nhưng sau đó hãy tập trung vào các sở thích mới và dành thời gian cho bạn bè thân thiết.", link: "https://vov.vn/doi-song/tam-ly/cach-vuot-qua-cu-soc-khi-chia-tay-nguoi-yeu-879412.vov", search: "crush thich yeu" },
+            { id: 4, tag: 'HỌC TẬP', title: "Phương pháp Pomodoro hiệu quả", img: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=500", content: "Pomodoro là kỹ thuật quản lý thời gian: Học tập trung 25 phút, nghỉ 5 phút. Sau 4 lần như vậy thì nghỉ dài hơn 15-30 phút. Cách này giúp não bộ luôn tỉnh táo.", link: "https://www.studytienganh.vn/news/1012/pomodoro-la-gi-cach-hoc-tap-va-lam-viec-theo-phuong-phap-pomodoro", search: "hoc tap thi cu" },
+            { id: 5, tag: 'SỨC KHỎE', title: "Mất ngủ ở tuổi Teen", img: "https://images.unsplash.com/photo-1511295742364-917e70331821?w=500", content: "Mất ngủ làm giảm trí nhớ và sự tập trung. Hãy bỏ điện thoại ít nhất 30 phút trước khi ngủ, ngâm chân nước ấm hoặc uống một ly sữa ấm để dễ ngủ hơn nhé.", link: "https://vinmec.com/vi/tin-tuc/suc-khoe-tong-quat/tai-sao-tre-tuoi-day-thi-hay-bi-mat-ngu/", search: "ngu thuc khuya" }
+        ];
+
+        for(let i=6; i<=50; i++) {
+            libraryData.push({ id: i, tag: 'KIẾN THỨC', title: `Chủ đề tư vấn hữu ích số ${i}`, img: `https://picsum.photos/seed/${i+50}/500/300`, content: "Nội dung đang được cập nhật để cung cấp cho bạn những lời khuyên bổ ích nhất về cuộc sống và sức khỏe tuổi mới lớn. Hãy cùng đón chờ nhé!", link: "https://google.com", search: "kien thuc moi" });
+        }
+
+        const grid = document.getElementById('article-grid');
+        libraryData.forEach(item => {
+            const art = document.createElement('article');
+            art.className = 'article-item bg-white rounded-3xl overflow-hidden shadow-sm border border-slate-100 hover:shadow-md transition-all cursor-pointer group';
+            art.setAttribute('data-search', item.search + " " + item.title.toLowerCase());
+            art.onclick = () => openArticle(item);
+            art.innerHTML = `<div class="h-40 overflow-hidden relative"><img src="${item.img}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"><span class="absolute top-3 left-3 bg-white/90 px-2 py-1 rounded-lg text-[9px] font-bold text-indigo-600">${item.tag}</span></div><div class="p-4"><h3 class="font-bold text-slate-800 text-sm leading-tight">${item.title}</h3></div>`;
+            grid.appendChild(art);
+        });
+
+        function openArticle(item) {
+            document.getElementById('detail-img').src = item.img;
+            document.getElementById('detail-tag').innerText = item.tag;
+            document.getElementById('detail-title').innerText = item.title;
+            document.getElementById('detail-content').innerText = item.content;
+            document.getElementById('detail-link').href = item.link;
+            document.getElementById('detail-link').innerText = item.link;
+            const detailScreen = document.getElementById('article-detail');
+            detailScreen.classList.remove('hidden-screen');
+            gsap.fromTo(detailScreen, {y: '100%'}, {y: 0, duration: 0.4, ease: "power2.out"});
+            lucide.createIcons();
+        }
+
+        function closeArticle() {
+            gsap.to('#article-detail', {y: '100%', duration: 0.4, onComplete: () => {
+                document.getElementById('article-detail').classList.add('hidden-screen');
+            }});
+        }
+
+        // 3. LOGIC CHAT (HỢP NHẤT AN TOÀN)
+        const botBrain = [
+            { keywords: ['mụn', 'da'], responses: { friend: "Mụn chán xỉu! 😩 Đừng nặn nha, sẹo đó. Rửa mặt kỹ vào bro!", parent: "Con đừng lo, dậy thì ai cũng bị. Để mẹ mua sữa rửa mặt cho nhen.", expert: "Mụn là do bã nhờn tăng tiết. Em nên làm sạch da 2 bước nhé.", companion: "Mụn dậy thì xử lý đơn giản: Rửa mặt 2 lần/ngày và uống nhiều nước nhé! 🌿" }},
+            { keywords: ['cao', 'chiều cao'], responses: { friend: "Đi bơi đê bro! 🏊‍♂️ Uống sữa thay nước lọc luôn kkk.", parent: "Ăn nhiều canxi và ngủ trước 10h tối đi con.", expert: "Em cần kết hợp Dinh dưỡng và vận động giãn cơ.", companion: "Để cao hơn, cậu hãy ngủ trước 10h đêm và tập hít xà đơn nhé! 🏀" }}
+        ];
+
+        function handleBot(text, role, listId, typingId) {
+            const safetyStatus = checkSafety(text);
+            if (safetyStatus === 'danger') return;
+            
+            document.getElementById(typingId).classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById(typingId).classList.add('hidden');
+                let reply = (safetyStatus !== 'safe') ? safetyStatus : 
+                            (botBrain.find(b => b.keywords.some(k => text.toLowerCase().includes(k)))?.responses[role] || "Mình đang nghe cậu đây, kể tiếp đi...");
+                appendMsg(listId, reply, 'bot');
+            }, 1000);
+        }
+
+        // 4. LOGIC MÀN HÌNH & CHIPS
+        function showScreen(screenId) {
+            const screens = ['#landing-page', '#multi-dim-chat', '#companion-chat', '#library-page'];
+            screens.forEach(s => {
+                const el = document.querySelector(s);
+                if(s === screenId) {
+                    el.classList.remove('hidden-screen');
+                    gsap.fromTo(s, {opacity: 0, y: 20}, {opacity: 1, y: 0, duration: 0.4});
+                } else { el.classList.add('hidden-screen'); }
+            });
+            lucide.createIcons();
+            // Đảm bảo trạng thái khóa được cập nhật khi chuyển màn hình
+            if(isLocked) updateAllInputs(true, `Bị khóa...`);
+        }
+
+        function triggerQuickExit() { window.location.replace("https://www.google.com"); }
+        function autoExpand(t) { t.style.height = 'auto'; t.style.height = t.scrollHeight + 'px'; }
+
+        let multiRole = 'friend';
+        function selectRole(role) {
+            multiRole = role;
+            gsap.to('#role-selection-screen', {opacity: 0, duration: 0.3, onComplete: () => {
+                document.getElementById('role-selection-screen').classList.add('hidden-screen');
+                const ui = document.getElementById('multi-chat-ui');
+                ui.classList.remove('hidden-screen');
+                gsap.to(ui, {opacity: 1, duration: 0.3});
+                const names = { friend: 'Bạn Thân', parent: 'Bố Mẹ Tâm Lý', expert: 'Chuyên Gia' };
+                document.getElementById('multi-bot-avatar').innerText = { friend: '😎', parent: '🏡', expert: '👩‍⚕️' }[role];
+                appendMsg('multi-message-list', `Chào cậu, mình là ${names[role]}. Cậu cần tâm sự gì không?`, 'bot');
+            }});
+        }
+
+        function resetMultiChat() {
+            document.getElementById('multi-chat-ui').classList.add('hidden-screen');
+            document.getElementById('role-selection-screen').classList.remove('hidden-screen');
+            document.getElementById('role-selection-screen').style.opacity = 1;
+            document.getElementById('multi-message-list').innerHTML = '';
+        }
+
+        function sendMultiMessage() {
+            const input = document.getElementById('multi-chat-input');
+            const text = input.value.trim();
+            if(!text || isLocked) return;
+            appendMsg('multi-message-list', text, 'user');
+            input.value = '';
+            input.style.height = 'auto';
+            handleBot(text, multiRole, 'multi-message-list', 'multi-typing');
+        }
+
+        function sendCompanionMessage() {
+            const input = document.getElementById('companion-chat-input');
+            const text = input.value.trim();
+            if(!text || isLocked) return;
+            appendMsg('companion-message-list', text, 'user');
+            input.value = '';
+            input.style.height = 'auto';
+            handleBot(text, 'companion', 'companion-message-list', 'companion-typing');
+        }
+
+        const companionQuickChips = [
+            { text: "Mụn xử lý sao?", icon: "🌿" }, { text: "Cách cao thêm?", icon: "📏" }, 
+            { text: "Áp lực quá!", icon: "📚" }, { text: "Cách tỏ tình?", icon: "💘" }
+        ];
+        const chipsContainer = document.getElementById('companion-quick-chips');
+        companionQuickChips.forEach(chip => {
+            const btn = document.createElement('button');
+            btn.className = "whitespace-nowrap bg-white border border-slate-100 text-slate-600 text-[11px] font-bold px-4 py-2 rounded-full shadow-sm";
+            btn.innerHTML = `${chip.icon} ${chip.text}`;
+            btn.onclick = () => { if(!isLocked) { document.getElementById('companion-chat-input').value = chip.text; sendCompanionMessage(); } };
+            chipsContainer.appendChild(btn);
+        });
+
+        function appendMsg(listId, text, sender) {
+            const list = document.getElementById(listId);
+            const div = document.createElement('div');
+            div.className = sender === 'user' ? 'flex justify-end' : 'flex items-end gap-2';
+            div.innerHTML = `<div class="p-3 rounded-2xl text-sm ${sender === 'user' ? 'bubble-user' : 'bubble-bot'} shadow-sm max-w-[85%]">${text}</div>`;
+            list.appendChild(div);
+            const container = list.parentElement;
+            container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+        }
+
+        function searchArticles() {
+            const query = document.getElementById('lib-search').value.toLowerCase();
+            document.querySelectorAll('.article-item').forEach(item => {
+                item.style.display = item.getAttribute('data-search').includes(query) ? 'block' : 'none';
+            });
+        }
+
+        function clearCompanionChat() { if(confirm("Xóa lịch sử chat?")) document.getElementById('companion-message-list').innerHTML = ''; }
+    </script>
+</body>
+</html>
